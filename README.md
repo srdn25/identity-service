@@ -9,6 +9,10 @@ Identity service for users. Storage user data
 
 ```bash
 $ npm install
+
+$ cp .env.example .env
+
+update credentials
 ```
 
 ## Running the app
