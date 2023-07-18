@@ -5,6 +5,11 @@
 
 Identity service for users. Storage user data
 
+User has:
+- email
+- token - temporary or permanent token (like from external providers Google, Okta, Azure)
+- featureFlags - string with feature flags or permissions (handling on customer service side)
+
 ## Installation
 
 ```bash
