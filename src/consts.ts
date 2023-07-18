@@ -1,1 +1,3 @@
-export const USER_REPOSITORY = 'USER_REPOSITORY';
+import messagesJson = require('../messages.json');
+
+export const messages = messagesJson;

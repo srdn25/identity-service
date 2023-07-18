@@ -1,11 +1,12 @@
-import { HttpException, HttpStatus, Inject, Injectable } from '@nestjs/common';
+import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { User } from './user.entity';
-import { USER_REPOSITORY } from '../consts';
 import { UpdateUserDto } from './dto/updateUser.dto';
+import { InjectModel } from '@nestjs/sequelize';
+import { messages } from '../consts';
 
 @Injectable()
 export class UserService {
-  constructor(@Inject(USER_REPOSITORY) private userRepository: typeof User) {}
+  constructor(@InjectModel(User) private userRepository: typeof User) {}
 
   private whereForIdOrEmail(idOrEmail) {
     return {
@@ -24,7 +25,7 @@ export class UserService {
     });
 
     if (!user) {
-      throw new HttpException('User not found', HttpStatus.NOT_FOUND);
+      throw new HttpException(messages.USER_NOT_FOUND, HttpStatus.NOT_FOUND);
     }
 
     return user;
@@ -44,7 +45,7 @@ export class UserService {
       return this.userRepository.findOne({ where: { id } });
     }
 
-    throw new HttpException('User not found', HttpStatus.NOT_FOUND);
+    throw new HttpException(messages.USER_NOT_FOUND, HttpStatus.NOT_FOUND);
   }
 
   async delete(idOrEmail: number | string) {
@@ -53,9 +54,9 @@ export class UserService {
     });
 
     if (deleted > 0) {
-      return true;
+      return deleted;
     }
 
-    throw new HttpException('User not found', HttpStatus.NOT_FOUND);
+    throw new HttpException(messages.USER_NOT_FOUND, HttpStatus.NOT_FOUND);
   }
 }

@@ -15,7 +15,7 @@ User has:
 ```bash
 $ npm install
 
-$ cp .env.example .env
+$ cp .dev.env.example .dev.env
 
 update credentials
 ```

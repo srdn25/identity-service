@@ -6,7 +6,7 @@ services:
     build:
       context: .
     env_file:
-      - .env
+      - .dev.env
     volumes:
       - .:/app
       - /app/node_modules
@@ -21,13 +21,14 @@ services:
     container_name: postgres
     image: postgres:12
     env_file:
-      - .env
+      - .dev.env
     environment:
       PG_DATA: /var/lib/postgresql/data
     ports:
       - 5432:5432
     volumes:
       - pgdata:/var/lib/postgresql/data
+      - ./scripts/init_test_db.sql:/docker-entrypoint-initdb.d/init_user.sql
     restart: always
 
 volumes:
