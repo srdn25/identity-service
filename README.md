@@ -37,6 +37,19 @@ $ npm run test:e2e
 $ npm run test:cov
 ```
 
+## Development
+
+```bash
+# Generate new module
+$ nest generate module <module name>
+
+# Generate new controller
+$ nest generate controller <controller name>
+
+# Generate new service
+$ nest generate service <service name>
+```
+
 ## License
 
 [GNU licensed](LICENSE).
