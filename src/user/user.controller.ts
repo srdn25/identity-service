@@ -6,6 +6,8 @@ import {
   Body,
   Param,
   Delete,
+  Response,
+  HttpStatus,
 } from '@nestjs/common';
 import { UserService } from './user.service';
 import { CreateUserDto } from './dto/createUser.dto';
@@ -18,23 +20,36 @@ export class UserController {
   ) {}
 
   @Get()
-  getAll() {
+  async getAll(@Response() response) {
     this.logger.debug('debug getAll in user controller');
-    return this.userService.findAll();
+    const result = await this.userService.findAll();
+    return response.status(HttpStatus.OK).json(result);
   }
 
   @Post()
-  create(@Body() userDto: CreateUserDto) {
-    return this.userService.create(userDto);
+  async create(@Response() response, @Body() userDto: CreateUserDto) {
+    const result = await this.userService.create(userDto);
+
+    return response.status(HttpStatus.CREATED).json(result);
   }
 
   @Get('/:idOrEmail')
-  getUser(@Param('idOrEmail') idOrEmail: number | string) {
-    return this.userService.find(idOrEmail);
+  async getUser(
+    @Response() response,
+    @Param('idOrEmail') idOrEmail: number | string,
+  ) {
+    const result = await this.userService.find(idOrEmail);
+
+    return response.status(HttpStatus.OK).json(result);
   }
 
   @Delete('/:idOrEmail')
-  deleteUser(@Param('idOrEmail') idOrEmail: number | string) {
-    return this.userService.delete(idOrEmail);
+  async deleteUser(
+    @Response() response,
+    @Param('idOrEmail') idOrEmail: number | string,
+  ) {
+    const result = await this.userService.delete(idOrEmail);
+
+    return response.status(HttpStatus.OK).json(result);
   }
 }
