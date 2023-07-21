@@ -1,3 +1,8 @@
 {
-  "USER_NOT_FOUND": "User not found"
+  "USER_NOT_FOUND": "User not found",
+  "EMAIL_SHOULD_BE_CORRECT_FORMAT": "Not correct email format",
+  "SHOULD_BE_AS_STRING": "Should be as string",
+  "SHOULD_BE_AS_NUMBER": "Should be as number",
+  "MIN_LENGTH_SHOULD_BE": "Minimum length should be",
+  "MAX_LENGTH_SHOULD_BE": "Maximum length should be"
 }

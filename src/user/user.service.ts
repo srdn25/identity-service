@@ -10,8 +10,8 @@ export class UserService {
 
   private whereForIdOrEmail(idOrEmail) {
     return {
-      ...(typeof idOrEmail === 'number'
-        ? { id: idOrEmail }
+      ...(/^\d+$/.test(idOrEmail)
+        ? { id: Number(idOrEmail) }
         : { email: idOrEmail }),
     };
   }

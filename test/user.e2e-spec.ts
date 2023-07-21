@@ -95,7 +95,7 @@ describe('AppController (e2e)', () => {
       .delete(`/users/${existingUser.id}`)
       .expect(HttpStatus.OK);
 
-    expect(!!body).toBeFalsy();
+    expect(body).toEqual(1);
 
     const deletedUser = await User.findOne({
       where: { email: userStub[0].email },
