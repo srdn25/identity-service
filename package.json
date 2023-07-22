@@ -1,6 +1,6 @@
 {
   "name": "identity-service",
-  "version": "0.0.7",
+  "version": "0.0.8",
   "description": "Identity service",
   "author": "Denys Sorokin",
   "private": true,
