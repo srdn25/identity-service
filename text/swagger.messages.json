@@ -1,0 +1,58 @@
+{
+  "tags": {
+    "user": {
+      "tag": "users",
+      "description": "user entity"
+    },
+    "info": {
+      "tag": "info",
+      "description": "service info"
+    },
+    "auth": {
+      "tag": "auth",
+      "description": "user authorization and authentication"
+    }
+  },
+  "requests": {
+    "app": {
+      "ping": {
+        "name": "Ping",
+        "description": "Check API is alive"
+      }
+    },
+    "user": {
+      "getAll": {
+        "name": "Get all users",
+        "description": "Get all users"
+      },
+      "create": {
+        "name": "Create user",
+        "description": "Create user"
+      },
+      "get": {
+        "name": "Find user",
+        "description": "Find one by email or id"
+      },
+      "delete": {
+        "name": "Delete user",
+        "description": "Delete one user by email or id"
+      }
+    }
+  },
+  "entities": {
+    "user": {
+      "id": {
+        "description": "Unique user identifier"
+      },
+      "email": {
+        "description": "Unique user email"
+      },
+      "featureFlag": {
+        "description": "User feature flags, handled on client side"
+      },
+      "token": {
+        "description": "User authorization token"
+      }
+    }
+  }
+}

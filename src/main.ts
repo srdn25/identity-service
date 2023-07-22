@@ -5,7 +5,10 @@ import {
   utilities as nestWinstonModuleUtilities,
 } from 'nest-winston';
 
+import metadata = require('../package.json');
 import { AppModule } from './app.module';
+import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
+import { swaggerMessages } from './consts';
 
 async function bootstrap() {
   const PORT = process.env.PORT || 3000;
@@ -28,11 +31,33 @@ async function bootstrap() {
     ],
   });
 
+  const swaggerConfig = new DocumentBuilder()
+    .setTitle(metadata.name)
+    .setDescription(metadata.description)
+    .setVersion(metadata.version)
+    .addTag(
+      swaggerMessages.tags.user.tag,
+      swaggerMessages.tags.user.description,
+    )
+    .addTag(
+      swaggerMessages.tags.auth.tag,
+      swaggerMessages.tags.auth.description,
+    )
+    .addTag(
+      swaggerMessages.tags.info.tag,
+      swaggerMessages.tags.info.description,
+    )
+    .build();
+
   const app = await NestFactory.create(AppModule, {
     logger: WinstonModule.createLogger({
       instance: logger,
     }),
   });
+
+  const swaggerDocument = SwaggerModule.createDocument(app, swaggerConfig);
+  SwaggerModule.setup('/doc', app, swaggerDocument);
+
   await app.listen(PORT, () => logger.info(`Server started at ${PORT} port`));
 }
 bootstrap();

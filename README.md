@@ -5,6 +5,8 @@
 
 Identity service for users. Storage user data
 
+I store all messages in /text/*json files for be agile in text edit or translate
+
 User has:
 - email
 - token - temporary or permanent token (like from external providers Google, Okta, Azure)
