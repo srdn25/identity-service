@@ -1,4 +1,4 @@
-import { NestFactory } from '@nestjs/core';
+import { HttpAdapterHost, NestFactory } from '@nestjs/core';
 import * as winston from 'winston';
 import {
   WinstonModule,
@@ -9,6 +9,8 @@ import metadata = require('../package.json');
 import { AppModule } from './app.module';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { swaggerMessages } from './consts';
+import { GlobalHandleErrors } from './globalHandleErrors.filter';
+import { Logger } from '@nestjs/common';
 
 async function bootstrap() {
   const PORT = process.env.PORT || 3000;
@@ -54,6 +56,11 @@ async function bootstrap() {
       instance: logger,
     }),
   });
+  const httpAdapterHost = app.get(HttpAdapterHost);
+  const appLogger = app.get(Logger);
+
+  app.setGlobalPrefix('identity-provider');
+  app.useGlobalFilters(new GlobalHandleErrors(httpAdapterHost, appLogger));
 
   const swaggerDocument = SwaggerModule.createDocument(app, swaggerConfig);
   SwaggerModule.setup('/doc', app, swaggerDocument);

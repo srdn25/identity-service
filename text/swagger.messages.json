@@ -4,6 +4,10 @@
       "tag": "users",
       "description": "user entity"
     },
+    "provider": {
+      "tag": "provider",
+      "description": "Authorization providers"
+    },
     "info": {
       "tag": "info",
       "description": "service info"
@@ -37,6 +41,19 @@
         "name": "Delete user",
         "description": "Delete one user by email or id"
       }
+    },
+    "provider": {
+      "callback": {
+        "name": "Receive webhook data from authorization provider",
+        "description": "Endpoint for receive authorization data from provider",
+        "params": {
+          "provider": "Provider type"
+        }
+      },
+      "authorization": {
+        "name": "Send request to authorization",
+        "description": "Send authorization request, than wait response on callback endpoint"
+      }
     }
   },
   "entities": {
@@ -52,6 +69,49 @@
       },
       "token": {
         "description": "User authorization token"
+      }
+    },
+    "provider": {
+      "id": {
+        "description": "Unique provider identifier"
+      },
+      "config": {
+        "description": "Config for connect to provider"
+      },
+      "userId": {
+        "description": "The user ID - owner of this provider"
+      },
+      "authToken": {
+        "description": "User authorization token"
+      },
+      "refreshToken": {
+        "description": "User refresh token for update authToken"
+      }
+    },
+    "providerType": {
+      "id": {
+        "description": "Unique provider type identifier"
+      },
+      "type": {
+        "description": "Provider name"
+      }
+    }
+  },
+  "methods": {
+    "provider": {
+      "requestToken": {
+        "description": "Method for get or update authorization token",
+        "properties": {
+          "scope": "A space-delimited list of scopes that identify the resources that your application could access on the user's behalf. These values inform the consent screen that Google displays to the user.",
+          "accessType": "Indicates whether your application can refresh access tokens when the user is not present at the browser. Valid parameter values are online, which is the default value, and offline.",
+          "responseType": "Determines whether the Google OAuth 2.0 endpoint returns an authorization code. Set the parameter value to code for web server applications.",
+          "state": "Specifies any string value that your application uses to maintain state between your authorization request and the authorization server's response. The server returns the exact value that you send as a name=value pair in the URL query component (?) of the redirect_uri after the user consents to or denies your application's access request.",
+          "redirectUrl": "Determines where the API server redirects the user after the user completes the authorization flow. The value must exactly match one of the authorized redirect URIs for the OAuth 2.0 client, which you configured in your client's API Console Credentials page.",
+          "clientId": "The client ID for your application. You can find this value in the API Console Credentials page."
+        }
+      },
+      "prepareConfig": {
+        "description": "Validate client config for provider and prepare it for use. Credentials for provider should provide by client"
       }
     }
   }

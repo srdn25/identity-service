@@ -4,5 +4,9 @@
   "SHOULD_BE_AS_STRING": "Should be as string",
   "SHOULD_BE_AS_NUMBER": "Should be as number",
   "MIN_LENGTH_SHOULD_BE": "Minimum length should be",
-  "MAX_LENGTH_SHOULD_BE": "Maximum length should be"
+  "MAX_LENGTH_SHOULD_BE": "Maximum length should be",
+  "CANNOT_RESOLVE_PROVIDER": "Cannot resolve user provider",
+  "USER_HAS_UNSUPPORTED_PROVIDER": "The user uses an unsupported provider",
+  "USER_HAS_NOT_PROVIDER": "The user has not a provider",
+  "VALIDATION_ERROR": "Validation error"
 }
