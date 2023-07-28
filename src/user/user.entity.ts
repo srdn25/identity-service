@@ -1,6 +1,16 @@
-import { Column, DataType, Model, Table } from 'sequelize-typescript';
+import {
+  BelongsToMany,
+  Column,
+  DataType,
+  HasOne,
+  Model,
+  Table,
+} from 'sequelize-typescript';
 import { ApiProperty } from '@nestjs/swagger';
 import { swaggerMessages } from '../consts';
+import { Provider } from '../provider/provider.entity';
+import { CustomerUser } from '../customer/customerUser.entity';
+import { Customer } from '../customer/customer.entity';
 
 @Table({ tableName: 'user_tbl', freezeTableName: true })
 export class User extends Model {
@@ -37,13 +47,9 @@ export class User extends Model {
   })
   featureFlags: string;
 
-  @ApiProperty({
-    example: '5c3df910-bdda-416d-83ee-6eecc5c47c48',
-    description: swaggerMessages.entities.user.token.description,
-  })
-  @Column({
-    type: DataType.STRING,
-    allowNull: true,
-  })
-  token: string;
+  @HasOne(() => Provider)
+  provider: Provider;
+
+  @BelongsToMany(() => Customer, () => CustomerUser)
+  customers: Customer[];
 }

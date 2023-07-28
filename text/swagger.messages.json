@@ -52,7 +52,7 @@
       },
       "authorization": {
         "name": "Send request to authorization",
-        "description": "Send authorization request, than wait response on callback endpoint"
+        "description": "Return link for open provider auth page, than wait response on callback endpoint"
       }
     }
   },
@@ -95,6 +95,41 @@
       "type": {
         "description": "Provider name"
       }
+    },
+    "customer": {
+      "id": {
+        "description": "Unique customer identifier"
+      },
+      "name": {
+        "description": "Customer name"
+      },
+      "login": {
+        "description": "Login for get access token to identity service"
+      },
+      "password": {
+        "description": "Password for get access token to identity service"
+      }
+    }
+  },
+  "types": {
+    "authState": {
+      "userId": "The user ID",
+      "providerId": "The provider ID",
+      "providerName": "The provider name"
+    },
+    "accessTokenResponse": {
+      "accessToken": "The token that your application sends to authorize a Google API request.",
+      "expiresIn": "The remaining lifetime of the access token in seconds.",
+      "refreshToken": "A token that you can use to obtain a new access token. Refresh tokens are valid until the user revokes access. Again, this field is only present in this response if you set the access_type parameter to offline in the initial request to Google's authorization server.",
+      "scope": "The scopes of access granted by the access_token expressed as a list of space-delimited, case-sensitive strings.",
+      "tokenType": "The type of token returned. At this time, this field's value is always set to Bearer."
+    },
+    "callbackReqQuery": {
+      "state": "",
+      "code": "",
+      "scope": "",
+      "authuser": "",
+      "prompt": ""
     }
   },
   "methods": {
@@ -109,6 +144,9 @@
           "redirectUrl": "Determines where the API server redirects the user after the user completes the authorization flow. The value must exactly match one of the authorized redirect URIs for the OAuth 2.0 client, which you configured in your client's API Console Credentials page.",
           "clientId": "The client ID for your application. You can find this value in the API Console Credentials page."
         }
+      },
+      "authLinkResponse": {
+        "description": "Link for open provider authorization page"
       },
       "prepareConfig": {
         "description": "Validate client config for provider and prepare it for use. Credentials for provider should provide by client"
