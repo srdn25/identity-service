@@ -5,7 +5,7 @@
 
 ## Description
 
-![Workflow](documentation/workglow.svg)
+![Workflow](documentation/workflow.svg)
 
 The "Identity Service" is a powerful and versatile solution designed to handle the authorization
 flow for users within your application. With this service, users can choose their preferred authentication
