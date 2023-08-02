@@ -66,14 +66,14 @@
       },
       "featureFlag": {
         "description": "User feature flags, handled on client side"
-      },
-      "token": {
-        "description": "User authorization token"
       }
     },
     "provider": {
       "id": {
         "description": "Unique provider identifier"
+      },
+      "active": {
+        "description": "Flag for mark active the customer provider"
       },
       "config": {
         "description": "Config for connect to provider"
@@ -108,7 +108,14 @@
       },
       "password": {
         "description": "Password for get access token to identity service"
+      },
+      "staticToken": {
+        "description": "Static token without expiry time. User can refresh the token"
       }
+    },
+    "customerJwtPayload": {
+      "providerId": "Unique the provider ID",
+      "customerId": "Unique the customer ID"
     }
   },
   "types": {

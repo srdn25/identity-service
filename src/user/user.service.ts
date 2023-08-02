@@ -31,11 +31,6 @@ export class UserService {
     return user;
   }
 
-  async create(dto): Promise<User> {
-    const user = await this.userRepository.create(dto);
-    return user;
-  }
-
   async update(dto: UpdateUserDto, id: number): Promise<User> {
     const updated = await this.userRepository.update(dto, {
       where: { id },

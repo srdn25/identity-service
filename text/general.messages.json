@@ -12,5 +12,7 @@
   "CANNOT_DECRYPT_STRING": "Cannot decrypt string, probably this is not our encrypted string",
   "CANNOT_FIND_USER_FROM_CALLBACK_STATE": "Cannot find user from callback state",
   "FAIL_ON_REQUEST_AUTH_TOKEN": "Fail request auth token",
-  "VALIDATION_DATA_SHOULD_BE_OBJECT": "Validation data should be object"
+  "VALIDATION_DATA_SHOULD_BE_OBJECT": "Validation data should be object",
+  "FAILED_AUTHORIZATION": "Failed authorization",
+  "NEED_AUTH_FOR_REFRESH_STATIC_TOKEN": "Need authorization for refresh static token"
 }

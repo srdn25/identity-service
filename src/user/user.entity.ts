@@ -2,13 +2,11 @@ import {
   BelongsToMany,
   Column,
   DataType,
-  HasOne,
   Model,
   Table,
 } from 'sequelize-typescript';
 import { ApiProperty } from '@nestjs/swagger';
 import { swaggerMessages } from '../consts';
-import { Provider } from '../provider/provider.entity';
 import { CustomerUser } from '../customer/customerUser.entity';
 import { Customer } from '../customer/customer.entity';
 
@@ -46,9 +44,6 @@ export class User extends Model {
     allowNull: true,
   })
   featureFlags: string;
-
-  @HasOne(() => Provider)
-  provider: Provider;
 
   @BelongsToMany(() => Customer, () => CustomerUser)
   customers: Customer[];

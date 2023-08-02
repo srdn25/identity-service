@@ -19,7 +19,10 @@ export function validateData(
     enableImplicitConversion: true,
   });
 
-  const errors = validateSync(validatedData, { skipMissingProperties: false });
+  const errors = validateSync(validatedData, {
+    skipMissingProperties: false,
+    excludeExtraneousValues: true,
+  });
 
   if (errors.length > 0) {
     const data = {

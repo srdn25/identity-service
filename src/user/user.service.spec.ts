@@ -3,7 +3,6 @@ import { UserService } from './user.service';
 import { User } from './user.entity';
 import { getModelToken } from '@nestjs/sequelize';
 import { HttpException, HttpStatus } from '@nestjs/common';
-import { CreateUserDto } from './dto/createUser.dto';
 import { messages } from '../consts';
 
 const userId = 1;
@@ -54,20 +53,6 @@ describe('UserService', () => {
       }
 
       return null;
-    }),
-    create: jest.fn((dto: CreateUserDto) => {
-      const payload = {
-        id: usersArray[usersArray.length - 1].id + 1,
-        token: null,
-        featureFlags: null,
-        createdAt: '2023-07-18 13:17:00',
-        updatedAt: '2023-07-18 13:17:00',
-        ...dto,
-      };
-
-      usersArray.push(payload);
-
-      return payload;
     }),
     update: jest.fn(),
     destroy: jest.fn(),
@@ -145,21 +130,6 @@ describe('UserService', () => {
       expect(error.message).toEqual(messages.USER_NOT_FOUND);
       expect(error.status).toEqual(HttpStatus.NOT_FOUND);
     }
-  });
-
-  it('should create user', async () => {
-    const payload = {
-      email: 'user@identity.ca',
-      token: 'new-user_t0k3n',
-    };
-    const result = await service.create(payload);
-
-    expect(result).toEqual({
-      ...usersArray[usersArray.length - 1],
-      ...payload,
-    });
-    expect(mockRepository.create).toHaveBeenCalledTimes(1);
-    expect(mockRepository.create).toHaveBeenCalledWith(payload);
   });
 
   it('should update user', async () => {

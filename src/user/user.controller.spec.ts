@@ -1,6 +1,6 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { UserController } from './user.controller';
-import { HttpStatus, Logger } from '@nestjs/common';
+import { Logger } from '@nestjs/common';
 import { UserService } from './user.service';
 
 describe('UserController', () => {
@@ -40,20 +40,5 @@ describe('UserController', () => {
 
   it('should be defined', () => {
     expect(controller).toBeDefined();
-  });
-
-  it('should create user', async () => {
-    const email = 'user@gmail.com';
-
-    const result = await controller.create(mockResponse, { email });
-
-    expect(mockResponse.status).toHaveBeenCalledTimes(1);
-    expect(mockResponse.status).toHaveBeenCalledWith(HttpStatus.CREATED);
-    expect(result).toStrictEqual({
-      id: userId,
-      email,
-      token: null,
-      featureFlags: null,
-    });
   });
 });

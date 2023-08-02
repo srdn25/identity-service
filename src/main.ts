@@ -11,6 +11,7 @@ import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { swaggerMessages } from './consts';
 import { GlobalHandleErrors } from './globalHandleErrors.filter';
 import { Logger } from '@nestjs/common';
+import { ValidationPipe } from './pipes/Validation.pipe';
 
 async function bootstrap() {
   const PORT = process.env.PORT || 3000;
@@ -61,6 +62,7 @@ async function bootstrap() {
 
   app.setGlobalPrefix('identity-provider');
   app.useGlobalFilters(new GlobalHandleErrors(httpAdapterHost, appLogger));
+  app.useGlobalPipes(new ValidationPipe());
 
   const swaggerDocument = SwaggerModule.createDocument(app, swaggerConfig);
   SwaggerModule.setup('/doc', app, swaggerDocument);

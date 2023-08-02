@@ -1,4 +1,4 @@
-import { createCipheriv, createDecipheriv } from 'node:crypto';
+import { createCipheriv, createDecipheriv, pbkdf2Sync } from 'node:crypto';
 
 export const encrypt = (data: object) => {
   const cipher = createCipheriv(
@@ -27,4 +27,19 @@ export const decrypt = (encryptedData) => {
     decipher.final('utf8');
 
   return JSON.parse(decrypted);
+};
+
+export const passwordEncrypt = (password) => {
+  return pbkdf2Sync(
+    password,
+    process.env.CRYPTO_IV_SECRET,
+    1000,
+    64,
+    'sha512',
+  ).toString();
+};
+
+export const passwordCompare = (password, userPassword) => {
+  const encryptedPassword = passwordEncrypt(password);
+  return userPassword === encryptedPassword;
 };

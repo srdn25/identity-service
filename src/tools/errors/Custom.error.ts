@@ -15,7 +15,6 @@ export class CustomError extends Error {
       message: this.message,
       reason: this.reason,
       status: this.status,
-      data: this.data,
     };
   }
 }

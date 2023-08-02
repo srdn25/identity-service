@@ -2,18 +2,19 @@ import {
   Controller,
   Logger,
   Get,
-  Post,
-  Body,
+  Request,
   Param,
   Delete,
   Response,
   HttpStatus,
+  UseGuards,
+  UnauthorizedException,
 } from '@nestjs/common';
 import { UserService } from './user.service';
-import { CreateUserDto } from './dto/createUser.dto';
 import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { messages, swaggerMessages } from '../consts';
 import { User } from './user.entity';
+import { AuthCustomerGuard } from '../auth/authCustomer.guard';
 
 @ApiTags(swaggerMessages.tags.user.tag)
 @Controller('users')
@@ -36,19 +37,7 @@ export class UserController {
     return response.status(HttpStatus.OK).json(result);
   }
 
-  @ApiOperation({ summary: swaggerMessages.requests.user.create.name })
-  @ApiResponse({
-    status: HttpStatus.CREATED,
-    type: User,
-    description: swaggerMessages.requests.user.create.description,
-  })
-  @Post()
-  async create(@Response() response, @Body() userDto: CreateUserDto) {
-    const result = await this.userService.create(userDto);
-
-    return response.status(HttpStatus.CREATED).json(result);
-  }
-
+  @UseGuards(AuthCustomerGuard)
   @ApiOperation({
     summary: swaggerMessages.requests.user.get.name,
     parameters: [
@@ -69,14 +58,25 @@ export class UserController {
   })
   @Get('/:idOrEmail')
   async getUser(
+    @Request() request,
     @Response() response,
     @Param('idOrEmail') idOrEmail: number | string,
   ) {
-    const result = await this.userService.find(idOrEmail);
+    const user = await this.userService.find(idOrEmail);
 
-    return response.status(HttpStatus.OK).json(result);
+    if (
+      request.customer?.customerId &&
+      !user.customers.some(
+        (customer) => customer.id === request.customer.customerId,
+      )
+    ) {
+      throw new UnauthorizedException();
+    }
+
+    return response.status(HttpStatus.OK).json(user);
   }
 
+  @UseGuards(AuthCustomerGuard)
   @ApiOperation({
     summary: swaggerMessages.requests.user.delete.name,
     parameters: [
@@ -96,9 +96,21 @@ export class UserController {
   })
   @Delete('/:idOrEmail')
   async deleteUser(
+    @Request() request,
     @Response() response,
     @Param('idOrEmail') idOrEmail: number | string,
   ) {
+    const user = await this.userService.find(idOrEmail);
+
+    if (
+      request.customer?.customerId &&
+      !user.customers.some(
+        (customer) => customer.id === request.customer.customerId,
+      )
+    ) {
+      throw new UnauthorizedException();
+    }
+
     const result = await this.userService.delete(idOrEmail);
 
     return response.status(HttpStatus.OK).json(result);

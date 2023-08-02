@@ -1,13 +1,21 @@
-import { CustomError } from './Custom.error';
 import { messages } from '../../consts';
+import { HttpException, HttpStatus } from '@nestjs/common';
 
-export class ValidationError extends CustomError {
-  status: number;
+export class ValidationError extends HttpException {
   reason: string[] | object | string;
+  messages: string[];
+
   constructor(error) {
-    super(error.message || messages.VALIDATION_ERROR);
-    this.status = error.status;
-    this.reason = error.reason;
-    this.message = error.message || messages.VALIDATION_ERROR;
+    const message = error.message || messages.VALIDATION_ERROR;
+    super({ ...error, message }, HttpStatus.BAD_REQUEST);
+    this.messages = error.messages || [];
+  }
+
+  serialize() {
+    return {
+      message: this.message,
+      reason: this.reason,
+      messages: this.messages,
+    };
   }
 }
