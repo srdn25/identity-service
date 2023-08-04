@@ -9,12 +9,16 @@ import {
   HttpStatus,
   UseGuards,
   UnauthorizedException,
+  Put,
+  Body,
+  HttpException,
 } from '@nestjs/common';
 import { UserService } from './user.service';
 import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { messages, swaggerMessages } from '../consts';
 import { User } from './user.entity';
 import { AuthCustomerGuard } from '../auth/authCustomer.guard';
+import { UpdateUserDto } from './dto/updateUser.dto';
 
 @ApiTags(swaggerMessages.tags.user.tag)
 @Controller('users')
@@ -64,6 +68,10 @@ export class UserController {
   ) {
     const user = await this.userService.find(idOrEmail);
 
+    if (!user) {
+      throw new HttpException(messages.USER_NOT_FOUND, HttpStatus.NOT_FOUND);
+    }
+
     if (
       request.customer?.customerId &&
       !user.customers.some(
@@ -112,6 +120,17 @@ export class UserController {
     }
 
     const result = await this.userService.delete(idOrEmail);
+
+    return response.status(HttpStatus.OK).json(result);
+  }
+
+  @Put('/:id')
+  async updateUser(
+    @Response() response,
+    @Body() body: UpdateUserDto,
+    @Param('id') id: number,
+  ): Promise<User> {
+    const result = await this.userService.update(body, id);
 
     return response.status(HttpStatus.OK).json(result);
   }

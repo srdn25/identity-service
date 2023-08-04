@@ -12,7 +12,8 @@ import { ReturnCustomerDataDto } from './dto/returnCustomerData.dto';
 import { Provider } from '../provider/provider.entity';
 import { messages } from '../consts';
 import { CustomError } from '../tools/errors/Custom.error';
-import { SequelizeTryCatch } from '../tools/utils.tool';
+import { ProviderType } from '../provider/providerType.entity';
+import * as dbHelper from '../tools/dbHelper.tool';
 
 @Injectable()
 export class CustomerService {
@@ -72,31 +73,28 @@ export class CustomerService {
     return customer.serialize();
   }
 
-  @SequelizeTryCatch
-  async find(where, include): Promise<Customer> {
-    return this.customerRepository.findOne({ where, include });
-  }
-
   async findByLogin(login: string): Promise<Customer> {
-    return this.find({ login }, [
+    return dbHelper.find(this.customerRepository, { login }, [
       {
         model: Provider,
         required: false,
         where: {
           active: true,
         },
+        include: [ProviderType],
       },
     ]);
   }
 
   async findById(id: number): Promise<Customer> {
-    return this.find({ id }, [
+    return dbHelper.find(this.customerRepository, { id }, [
       {
         model: Provider,
         required: false,
         where: {
           active: true,
         },
+        include: [ProviderType],
       },
     ]);
   }

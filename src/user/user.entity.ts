@@ -2,6 +2,7 @@ import {
   BelongsToMany,
   Column,
   DataType,
+  HasMany,
   Model,
   Table,
 } from 'sequelize-typescript';
@@ -9,6 +10,7 @@ import { ApiProperty } from '@nestjs/swagger';
 import { swaggerMessages } from '../consts';
 import { CustomerUser } from '../customer/customerUser.entity';
 import { Customer } from '../customer/customer.entity';
+import { UserProvider } from './userProvider.entity';
 
 @Table({ tableName: 'user_tbl', freezeTableName: true })
 export class User extends Model {
@@ -47,4 +49,7 @@ export class User extends Model {
 
   @BelongsToMany(() => Customer, () => CustomerUser)
   customers: Customer[];
+
+  @HasMany(() => UserProvider)
+  providers: UserProvider[];
 }

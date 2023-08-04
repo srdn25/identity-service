@@ -6,6 +6,7 @@ import { Provider } from '../provider/provider.entity';
 import { ProviderType } from '../provider/providerType.entity';
 import { Customer } from '../customer/customer.entity';
 import { CustomerUser } from '../customer/customerUser.entity';
+import { UserProvider } from '../user/userProvider.entity';
 
 @Module({
   imports: [
@@ -17,7 +18,14 @@ import { CustomerUser } from '../customer/customerUser.entity';
       username: process.env.POSTGRES_USER,
       password: process.env.POSTGRES_PASSWORD,
       database: process.env.POSTGRES_DB,
-      models: [User, Provider, ProviderType, Customer, CustomerUser],
+      models: [
+        User,
+        Provider,
+        ProviderType,
+        Customer,
+        CustomerUser,
+        UserProvider,
+      ],
       autoLoadModels: true,
     }),
   ],

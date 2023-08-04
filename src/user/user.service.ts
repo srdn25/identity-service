@@ -3,10 +3,18 @@ import { User } from './user.entity';
 import { UpdateUserDto } from './dto/updateUser.dto';
 import { InjectModel } from '@nestjs/sequelize';
 import { messages } from '../consts';
+import { SequelizeError } from '../tools/errors/SequelizeError.error';
+import { Customer } from '../customer/customer.entity';
+import { UserProvider } from './userProvider.entity';
+import * as dbHelper from '../tools/dbHelper.tool';
 
 @Injectable()
 export class UserService {
-  constructor(@InjectModel(User) private userRepository: typeof User) {}
+  constructor(
+    @InjectModel(User) private userRepository: typeof User,
+    @InjectModel(UserProvider)
+    private userProviderRepository: typeof UserProvider,
+  ) {}
 
   private whereForIdOrEmail(idOrEmail) {
     return {
@@ -19,13 +27,27 @@ export class UserService {
     return this.userRepository.findAll();
   }
 
-  async find(idOrEmail: number | string): Promise<User> {
-    const user = await this.userRepository.findOne({
+  find(idOrEmail: number | string): Promise<User> {
+    return this.userRepository.findOne({
       where: this.whereForIdOrEmail(idOrEmail),
     });
+  }
 
-    if (!user) {
-      throw new HttpException(messages.USER_NOT_FOUND, HttpStatus.NOT_FOUND);
+  async create(email: string, customer: Customer): Promise<User> {
+    let user;
+
+    try {
+      user = await this.userRepository.create({ email });
+      await user.$set('customers', [customer.id]);
+      user.customers = [customer];
+    } catch (error) {
+      throw new SequelizeError({
+        ...error,
+        reason: messages.CANNOT_CREATE_USER,
+        data: {
+          email,
+        },
+      });
     }
 
     return user;
@@ -53,5 +75,40 @@ export class UserService {
     }
 
     throw new HttpException(messages.USER_NOT_FOUND, HttpStatus.NOT_FOUND);
+  }
+
+  async findUserProvider(
+    userId: number,
+    providerId: number,
+  ): Promise<UserProvider> {
+    return dbHelper.find(this.userProviderRepository, { userId, providerId });
+  }
+  async createOrUpdateUserProvider(
+    userId: number,
+    providerId: number,
+    config: object,
+    profile: object,
+  ): Promise<UserProvider> {
+    try {
+      let userProvider = await this.findUserProvider(userId, providerId);
+
+      if (!userProvider) {
+        userProvider = await this.userProviderRepository.create({
+          userId,
+          providerId,
+          config,
+          profile,
+        });
+      } else {
+        userProvider.profile = profile;
+        userProvider.config = config;
+      }
+
+      await userProvider.save();
+
+      return userProvider;
+    } catch (error) {
+      throw new SequelizeError(error);
+    }
   }
 }

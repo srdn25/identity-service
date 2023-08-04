@@ -53,6 +53,10 @@
       "authorization": {
         "name": "Send request to authorization",
         "description": "Return link for open provider auth page, than wait response on callback endpoint"
+      },
+      "createProvider": {
+        "name": "Create new a provider",
+        "description": "Create new provider for the customer"
       }
     }
   },
@@ -72,20 +76,20 @@
       "id": {
         "description": "Unique provider identifier"
       },
+      "name": {
+        "description": "Name of the provider"
+      },
       "active": {
         "description": "Flag for mark active the customer provider"
       },
       "config": {
         "description": "Config for connect to provider"
       },
-      "userId": {
-        "description": "The user ID - owner of this provider"
+      "customerId": {
+        "description": "The customer ID - owner of this provider"
       },
-      "authToken": {
-        "description": "User authorization token"
-      },
-      "refreshToken": {
-        "description": "User refresh token for update authToken"
+      "providerTypeId": {
+        "description": "A provider type ID - customer choose it from available providers"
       }
     },
     "providerType": {
@@ -120,7 +124,7 @@
   },
   "types": {
     "authState": {
-      "userId": "The user ID",
+      "customerId": "The customer ID",
       "providerId": "The provider ID",
       "providerName": "The provider name"
     },

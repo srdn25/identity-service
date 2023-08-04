@@ -1,16 +1,5 @@
-import { SequelizeError } from './errors/SequelizeError.error';
+import * as process from 'process';
 
 export function getCallbackUrl(): string {
-  return `${process.env.HOST}/identity-provider/provider/callback`;
-}
-
-export function SequelizeTryCatch(target, key, descriptor) {
-  const fn = descriptor.value;
-  descriptor.value = async (...args) => {
-    try {
-      await fn.apply(this, args);
-    } catch (error) {
-      throw new SequelizeError(error);
-    }
-  };
+  return `http://${process.env.HOST}:${process.env.PORT}/identity-provider/provider/callback`;
 }
