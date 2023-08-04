@@ -15,7 +15,13 @@ import { Exclude } from 'class-transformer';
 import { ReturnCustomerDataDto } from './dto/returnCustomerData.dto';
 import { Provider } from '../provider/provider.entity';
 
-@Table({ tableName: 'customer_tbl', freezeTableName: true })
+@Table({
+  tableName: 'customer_tbl',
+  freezeTableName: true,
+  defaultScope: {
+    attributes: { exclude: ['password'] },
+  },
+})
 export class Customer extends Model {
   @ApiProperty({
     example: 1,

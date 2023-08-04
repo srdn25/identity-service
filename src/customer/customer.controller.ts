@@ -9,12 +9,19 @@ import {
   Request,
   UseGuards,
   UsePipes,
+  Put,
+  Param,
 } from '@nestjs/common';
 import { CustomerService } from './customer.service';
 import { CreateCustomerDto } from './dto/createCustomer.dto';
 import { ValidationPipe } from '../pipes/Validation.pipe';
 import { AuthCustomerGuard } from '../auth/authCustomer.guard';
 import { SignInDto } from './dto/signIn.dto';
+import { AuthStaticTokenGuard } from '../auth/authStaticToken.guard';
+import { ApiOperation, ApiResponse } from '@nestjs/swagger';
+import { swaggerMessages } from '../consts';
+import { UpdateUserDto } from '../user/dto/updateUser.dto';
+import { User } from '../user/user.entity';
 
 @Controller('customer')
 export class CustomerController {
@@ -46,6 +53,36 @@ export class CustomerController {
   @Post('sign-in')
   async signIn(@Response() response, @Body() body: SignInDto) {
     const result = await this.customerService.signIn(body.login, body.password);
+
+    return response.status(HttpStatus.OK).json(result);
+  }
+
+  @UseGuards(AuthStaticTokenGuard)
+  @ApiOperation({
+    summary: swaggerMessages.requests.user.update.name,
+    parameters: [
+      {
+        name: 'idOrEmail',
+        in: 'path',
+      },
+    ],
+  })
+  @ApiResponse({
+    status: HttpStatus.OK,
+    description: swaggerMessages.requests.user.update.description,
+  })
+  @Put('/update/user/:id')
+  async updateUser(
+    @Response() response,
+    @Request() request,
+    @Body() body: UpdateUserDto,
+    @Param('id') id: number,
+  ): Promise<User> {
+    const result = await this.customerService.updateUser(
+      body,
+      request.customer.customerId,
+      id,
+    );
 
     return response.status(HttpStatus.OK).json(result);
   }

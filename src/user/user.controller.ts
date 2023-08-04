@@ -9,16 +9,13 @@ import {
   HttpStatus,
   UseGuards,
   UnauthorizedException,
-  Put,
-  Body,
   HttpException,
 } from '@nestjs/common';
 import { UserService } from './user.service';
 import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { messages, swaggerMessages } from '../consts';
 import { User } from './user.entity';
-import { AuthCustomerGuard } from '../auth/authCustomer.guard';
-import { UpdateUserDto } from './dto/updateUser.dto';
+import { AuthStaticTokenGuard } from '../auth/authStaticToken.guard';
 
 @ApiTags(swaggerMessages.tags.user.tag)
 @Controller('users')
@@ -28,6 +25,7 @@ export class UserController {
     private readonly userService: UserService,
   ) {}
 
+  @UseGuards(AuthStaticTokenGuard)
   @ApiOperation({ summary: swaggerMessages.requests.user.getAll.name })
   @ApiResponse({
     status: HttpStatus.OK,
@@ -35,13 +33,12 @@ export class UserController {
     description: swaggerMessages.requests.user.getAll.description,
   })
   @Get()
-  async getAll(@Response() response): Promise<User[]> {
-    this.logger.debug('debug getAll in user controller');
-    const result = await this.userService.findAll();
+  async getAll(@Response() response, @Request() request): Promise<User[]> {
+    const result = await this.userService.findAll(request.customer?.customerId);
     return response.status(HttpStatus.OK).json(result);
   }
 
-  @UseGuards(AuthCustomerGuard)
+  @UseGuards(AuthStaticTokenGuard)
   @ApiOperation({
     summary: swaggerMessages.requests.user.get.name,
     parameters: [
@@ -84,7 +81,7 @@ export class UserController {
     return response.status(HttpStatus.OK).json(user);
   }
 
-  @UseGuards(AuthCustomerGuard)
+  @UseGuards(AuthStaticTokenGuard)
   @ApiOperation({
     summary: swaggerMessages.requests.user.delete.name,
     parameters: [
@@ -120,17 +117,6 @@ export class UserController {
     }
 
     const result = await this.userService.delete(idOrEmail);
-
-    return response.status(HttpStatus.OK).json(result);
-  }
-
-  @Put('/:id')
-  async updateUser(
-    @Response() response,
-    @Body() body: UpdateUserDto,
-    @Param('id') id: number,
-  ): Promise<User> {
-    const result = await this.userService.update(body, id);
 
     return response.status(HttpStatus.OK).json(result);
   }

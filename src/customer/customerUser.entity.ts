@@ -1,4 +1,5 @@
 import {
+  BelongsTo,
   Column,
   DataType,
   ForeignKey,
@@ -7,16 +8,24 @@ import {
 } from 'sequelize-typescript';
 import { User } from '../user/user.entity';
 import { Customer } from './customer.entity';
+import { ApiProperty } from '@nestjs/swagger';
+import { swaggerMessages } from '../consts';
 
-@Table({ tableName: 'customer_user_tbl', freezeTableName: true })
+@Table({
+  tableName: 'customer_user_tbl',
+  freezeTableName: true,
+  indexes: [{ fields: ['userId', 'customerId'], unique: true }],
+})
 export class CustomerUser extends Model {
-  @Column({
-    type: DataType.INTEGER,
-    unique: true,
-    autoIncrement: true,
-    primaryKey: true,
+  @ApiProperty({
+    example: 'canCreate canUpdate canDelete showNewFeature',
+    description: swaggerMessages.entities.user.featureFlag.description,
   })
-  id: number;
+  @Column({
+    type: DataType.STRING,
+    allowNull: true,
+  })
+  featureFlags: string;
 
   @ForeignKey(() => User)
   @Column({ type: DataType.INTEGER })
@@ -25,4 +34,7 @@ export class CustomerUser extends Model {
   @ForeignKey(() => Customer)
   @Column({ type: DataType.INTEGER })
   customerId: number;
+
+  @BelongsTo(() => User)
+  user: User;
 }

@@ -1,12 +1,12 @@
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { User } from './user.entity';
-import { UpdateUserDto } from './dto/updateUser.dto';
 import { InjectModel } from '@nestjs/sequelize';
 import { messages } from '../consts';
 import { SequelizeError } from '../tools/errors/SequelizeError.error';
 import { Customer } from '../customer/customer.entity';
 import { UserProvider } from './userProvider.entity';
 import * as dbHelper from '../tools/dbHelper.tool';
+import { Sequelize } from 'sequelize';
 
 @Injectable()
 export class UserService {
@@ -23,8 +23,31 @@ export class UserService {
         : { email: idOrEmail }),
     };
   }
-  async findAll(): Promise<User[]> {
-    return this.userRepository.findAll();
+  async findAll(customerId: number): Promise<User[]> {
+    return this.userRepository.findAll({
+      order: [['id', 'ASC']],
+      attributes: {
+        include: [
+          [
+            Sequelize.col('customers->CustomerUser.featureFlags'),
+            'featureFlags',
+          ],
+        ],
+      },
+      include: [
+        {
+          model: Customer,
+          required: true,
+          attributes: [],
+          through: {
+            as: 'CustomerUser',
+            where: {
+              customerId,
+            },
+          },
+        },
+      ],
+    });
   }
 
   find(idOrEmail: number | string): Promise<User> {
@@ -53,18 +76,6 @@ export class UserService {
     return user;
   }
 
-  async update(dto: UpdateUserDto, id: number): Promise<User> {
-    const updated = await this.userRepository.update(dto, {
-      where: { id },
-    });
-
-    if (updated[0] > 0) {
-      return this.userRepository.findOne({ where: { id } });
-    }
-
-    throw new HttpException(messages.USER_NOT_FOUND, HttpStatus.NOT_FOUND);
-  }
-
   async delete(idOrEmail: number | string) {
     const deleted = await this.userRepository.destroy({
       where: this.whereForIdOrEmail(idOrEmail),
@@ -83,6 +94,7 @@ export class UserService {
   ): Promise<UserProvider> {
     return dbHelper.find(this.userProviderRepository, { userId, providerId });
   }
+
   async createOrUpdateUserProvider(
     userId: number,
     providerId: number,

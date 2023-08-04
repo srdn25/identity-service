@@ -14,11 +14,17 @@ import { messages } from '../consts';
 import { CustomError } from '../tools/errors/Custom.error';
 import { ProviderType } from '../provider/providerType.entity';
 import * as dbHelper from '../tools/dbHelper.tool';
+import { UpdateUserDto } from '../user/dto/updateUser.dto';
+import { User } from '../user/user.entity';
+import { CustomerUser } from './customerUser.entity';
+import { Sequelize } from 'sequelize';
 
 @Injectable()
 export class CustomerService {
   constructor(
     @InjectModel(Customer) private customerRepository: typeof Customer,
+    @InjectModel(CustomerUser)
+    private customerUserRepository: typeof CustomerUser,
     private authService: AuthService,
   ) {}
 
@@ -73,17 +79,25 @@ export class CustomerService {
     return customer.serialize();
   }
 
-  async findByLogin(login: string): Promise<Customer> {
-    return dbHelper.find(this.customerRepository, { login }, [
-      {
-        model: Provider,
-        required: false,
-        where: {
-          active: true,
+  async findByLogin(login: string, withPassword = false): Promise<Customer> {
+    const allScopes = { attributes: { exclude: [] } };
+
+    return dbHelper.find(
+      this.customerRepository,
+      { login },
+      [
+        {
+          model: Provider,
+          required: false,
+          where: {
+            active: true,
+          },
+          include: [ProviderType],
         },
-        include: [ProviderType],
-      },
-    ]);
+      ],
+      {},
+      withPassword ? allScopes : {},
+    );
   }
 
   async findById(id: number): Promise<Customer> {
@@ -99,8 +113,11 @@ export class CustomerService {
     ]);
   }
 
-  async signIn(login, password): Promise<{ authToken: string }> {
-    const customer = await this.findByLogin(login);
+  async signIn(
+    login,
+    password,
+  ): Promise<{ customer: Customer; authToken: string }> {
+    const customer = await this.findByLogin(login, true);
 
     if (!customer) {
       throw new HttpException(
@@ -122,7 +139,44 @@ export class CustomerService {
     });
 
     return {
+      customer,
       authToken,
     };
+  }
+
+  async updateUser(
+    dto: UpdateUserDto,
+    customerId: number,
+    userId: number,
+  ): Promise<any> {
+    const customerUser = await this.customerUserRepository.findOne({
+      where: { userId, customerId },
+      attributes: {
+        include: [
+          [Sequelize.col('CustomerUser.featureFlags'), 'user.featureFlags'],
+        ],
+      },
+      include: [User],
+    });
+
+    if (!customerUser) {
+      throw new CustomError({
+        status: HttpStatus.NOT_FOUND,
+        message: messages.USER_NOT_FOUND,
+        data: {
+          customerId,
+          userId,
+        },
+        reason: messages.USER_NOT_FOUND,
+      });
+    }
+
+    if (dto.featureFlags) {
+      customerUser.featureFlags = dto.featureFlags;
+    }
+
+    await customerUser.save();
+
+    return customerUser.user;
   }
 }

@@ -37,16 +37,6 @@ export class User extends Model {
   })
   email: string;
 
-  @ApiProperty({
-    example: 'canCreate canUpdate canDelete showNewFeature',
-    description: swaggerMessages.entities.user.featureFlag.description,
-  })
-  @Column({
-    type: DataType.STRING,
-    allowNull: true,
-  })
-  featureFlags: string;
-
   @BelongsToMany(() => Customer, () => CustomerUser)
   customers: Customer[];
 
