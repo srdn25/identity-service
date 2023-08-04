@@ -50,6 +50,10 @@ async function bootstrap() {
       swaggerMessages.tags.info.tag,
       swaggerMessages.tags.info.description,
     )
+    .addTag(
+      swaggerMessages.tags.customer.tag,
+      swaggerMessages.tags.customer.description,
+    )
     .build();
 
   const app = await NestFactory.create(AppModule, {
@@ -60,12 +64,12 @@ async function bootstrap() {
   const httpAdapterHost = app.get(HttpAdapterHost);
   const appLogger = app.get(Logger);
 
-  app.setGlobalPrefix('identity-provider');
+  app.setGlobalPrefix(process.env.HOST_PREFIX);
   app.useGlobalFilters(new GlobalHandleErrors(httpAdapterHost, appLogger));
   app.useGlobalPipes(new ValidationPipe());
 
   const swaggerDocument = SwaggerModule.createDocument(app, swaggerConfig);
-  SwaggerModule.setup('/doc', app, swaggerDocument);
+  SwaggerModule.setup(`/${process.env.HOST_PREFIX}/doc`, app, swaggerDocument);
 
   await app.listen(PORT, () => logger.info(`Server started at ${PORT} port`));
 }

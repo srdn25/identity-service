@@ -91,7 +91,7 @@ export class GoogleProvider extends OAuth2 implements BaseInterfaceProvider {
       scope: 'openid profile email',
       access_type: 'offline',
       response_type: 'code',
-      redirect_uri: `http://${process.env.HOST}:${process.env.PORT}/identity-provider/provider/callback`,
+      redirect_uri: `http://${process.env.HOST}:${process.env.PORT}/${process.env.HOST_PREFIX}/provider/callback`,
       state: encrypt(state),
       client_id: config.client_id,
       prompt: 'consent',

@@ -18,11 +18,12 @@ import { ValidationPipe } from '../pipes/Validation.pipe';
 import { AuthCustomerGuard } from '../auth/authCustomer.guard';
 import { SignInDto } from './dto/signIn.dto';
 import { AuthStaticTokenGuard } from '../auth/authStaticToken.guard';
-import { ApiOperation, ApiResponse } from '@nestjs/swagger';
+import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { swaggerMessages } from '../consts';
 import { UpdateUserDto } from '../user/dto/updateUser.dto';
 import { User } from '../user/user.entity';
 
+@ApiTags(swaggerMessages.tags.customer.tag)
 @Controller('customer')
 export class CustomerController {
   constructor(

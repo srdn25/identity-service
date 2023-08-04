@@ -2,11 +2,15 @@
   "tags": {
     "user": {
       "tag": "users",
-      "description": "user entity"
+      "description": "The customer user"
     },
     "provider": {
       "tag": "provider",
       "description": "Authorization providers"
+    },
+    "customer": {
+      "tag": "customer",
+      "description": "The customer"
     },
     "info": {
       "tag": "info",
