@@ -7,6 +7,9 @@ import { Customer } from '../customer/customer.entity';
 import { UserProvider } from './userProvider.entity';
 import * as dbHelper from '../tools/dbHelper.tool';
 import { Sequelize } from 'sequelize';
+import { Provider } from '../provider/provider.entity';
+import { UserProviderWithTypeDto } from './dto/userProviderWithType.dto';
+import { ProviderType } from '../provider/providerType.entity';
 
 @Injectable()
 export class UserService {
@@ -91,8 +94,24 @@ export class UserService {
   async findUserProvider(
     userId: number,
     providerId: number,
-  ): Promise<UserProvider> {
-    return dbHelper.find(this.userProviderRepository, { userId, providerId });
+  ): Promise<UserProviderWithTypeDto> {
+    return dbHelper.find(
+      this.userProviderRepository,
+      { userId, providerId },
+      null,
+      {
+        include: [
+          {
+            attributes: [],
+            model: Provider,
+            include: [ProviderType],
+          },
+        ],
+        attributes: {
+          include: [[Sequelize.col('provider.type.name'), 'providerType']],
+        },
+      },
+    );
   }
 
   async createOrUpdateUserProvider(
@@ -100,9 +119,10 @@ export class UserService {
     providerId: number,
     config: object,
     profile: object,
-  ): Promise<UserProvider> {
+  ): Promise<UserProvider | UserProviderWithTypeDto> {
     try {
-      let userProvider = await this.findUserProvider(userId, providerId);
+      let userProvider: UserProvider | UserProviderWithTypeDto =
+        await this.findUserProvider(userId, providerId);
 
       if (!userProvider) {
         userProvider = await this.userProviderRepository.create({

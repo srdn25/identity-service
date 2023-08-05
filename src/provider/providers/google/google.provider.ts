@@ -99,23 +99,67 @@ export class GoogleProvider extends OAuth2 implements BaseInterfaceProvider {
   }
 
   async getUserProfile(accessToken: string): Promise<IUserProfile> {
-    const response = await this.httpService.axiosRef.get(
-      'https://www.googleapis.com/oauth2/v1/userinfo',
-      {
-        params: {
-          alt: 'json',
-          access_token: accessToken,
+    try {
+      const response = await this.httpService.axiosRef.get(
+        'https://www.googleapis.com/oauth2/v1/userinfo',
+        {
+          params: {
+            alt: 'json',
+            access_token: accessToken,
+          },
         },
-      },
-    );
+      );
 
-    if (!response.data?.email || response.status !== 200) {
+      if (!response.data?.email || response.status !== 200) {
+        // todo: refresh token if need it
+        throw new CustomError({
+          status: response.status || HttpStatus.BAD_REQUEST,
+          data: response.data,
+          message: messages.HAS_NOT_EMAIL_IN_RESPONSE,
+        });
+      }
+
+      return response.data;
+    } catch (error) {
+      if (error instanceof CustomError) {
+        throw error;
+      }
+
+      // if error.response.status 401 - need refresh token
       throw new CustomError({
-        status: HttpStatus.BAD_REQUEST,
-        message: messages.HAS_NOT_ACCESS_TOKEN_IN_RESPONSE,
+        status: error.response?.status,
+        message: error.message || messages.GOT_ERROR_ON_GETTING_USER_PROFILE,
+        data: {
+          providerName: this.providerName,
+        },
       });
     }
+  }
 
-    return response.data;
+  async refreshAuthToken(refreshToken, providerConfig: ConfigValidation) {
+    try {
+      const response = await this.httpService.axiosRef.post(
+        'https://oauth2.googleapis.com/token',
+        new URLSearchParams({
+          client_id: providerConfig.client_id,
+          client_secret: providerConfig.client_secret,
+          refresh_token: refreshToken,
+          grant_type: 'refresh_token',
+        }),
+        {
+          headers: {
+            'Content-Type': 'application/x-www-form-urlencoded',
+          },
+        },
+      );
+
+      return response.data;
+    } catch (error) {
+      // if 401 - refresh token is not valid, need delete user credentials from database
+      throw new CustomError({
+        status: error.response?.status,
+        message: error.message || messages.GOT_ERROR_ON_REFRESH_USER_TOKEN,
+      });
+    }
   }
 }

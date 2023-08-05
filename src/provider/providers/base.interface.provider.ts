@@ -10,4 +10,5 @@ export interface BaseInterfaceProvider {
   ) => PreparePayloadTokenDto;
   prepareAuthorizationUrl: (config, state: TokenStateDto) => string;
   getAuthToken: (config: object, code: string) => Promise<any>;
+  refreshAuthToken?: (refreshToken: string, providerConfig) => Promise<any>;
 }

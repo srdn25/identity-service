@@ -69,7 +69,7 @@ export class ProviderController {
   ) {
     const preparedCode = decodeURIComponent(query.code);
 
-    await this.providerService.getUserProviderDataAndSave(
+    await this.providerService.handleCallbackAndSaveData(
       query.state,
       preparedCode,
     );

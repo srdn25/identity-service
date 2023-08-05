@@ -1,4 +1,10 @@
-import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
+import {
+  forwardRef,
+  HttpException,
+  HttpStatus,
+  Inject,
+  Injectable,
+} from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
 import { Customer } from './customer.entity';
 import { AuthService } from '../auth/auth.service';
@@ -18,6 +24,10 @@ import { UpdateUserDto } from '../user/dto/updateUser.dto';
 import { User } from '../user/user.entity';
 import { CustomerUser } from './customerUser.entity';
 import { Sequelize } from 'sequelize';
+import { ReturnUpdatedUserDto } from './dto/ReturnUpdatedUser.dto';
+import { UserService } from '../user/user.service';
+import { ProviderService } from '../provider/provider.service';
+import { UserProviderTypeDto } from '../user/dto/userProviderType.dto';
 
 @Injectable()
 export class CustomerService {
@@ -25,7 +35,11 @@ export class CustomerService {
     @InjectModel(Customer) private customerRepository: typeof Customer,
     @InjectModel(CustomerUser)
     private customerUserRepository: typeof CustomerUser,
+    @Inject(forwardRef(() => AuthService))
     private authService: AuthService,
+    private readonly userService: UserService,
+    @Inject(forwardRef(() => ProviderService))
+    private readonly providerService: ProviderService,
   ) {}
 
   async create(body): Promise<ReturnCustomerDataDto> {
@@ -148,8 +162,8 @@ export class CustomerService {
     dto: UpdateUserDto,
     customerId: number,
     userId: number,
-  ): Promise<any> {
-    const customerUser = await this.customerUserRepository.findOne({
+  ): Promise<ReturnUpdatedUserDto> {
+    const customerUser: any = await this.customerUserRepository.findOne({
       where: { userId, customerId },
       attributes: {
         include: [
@@ -178,5 +192,38 @@ export class CustomerService {
     await customerUser.save();
 
     return customerUser.user;
+  }
+
+  /**
+   * Each customer has own provider. So, when I find user_provider with providerId,
+   * this means the result should be the user data for the current customer as well!
+   * For make sure - just check relations in database models
+   */
+  async getCustomerUser(
+    customerId: number,
+    userId: number,
+  ): Promise<UserProviderTypeDto> {
+    const provider = await this.providerService.findActiveCustomerProvider(
+      customerId,
+    );
+
+    if (!provider) {
+      throw new CustomError({
+        status: HttpStatus.BAD_REQUEST,
+        data: {
+          customerId,
+          userId,
+        },
+        message: messages.CUSTOMER_HAS_NOT_ACTIVE_PROVIDER,
+      });
+    }
+
+    // find user config for active provider
+    const userProvider = await this.userService.findUserProvider(
+      userId,
+      provider.id,
+    );
+
+    return { userProvider, provider };
   }
 }

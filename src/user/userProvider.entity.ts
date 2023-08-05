@@ -1,4 +1,5 @@
 import {
+  BelongsTo,
   Column,
   DataType,
   ForeignKey,
@@ -34,4 +35,7 @@ export class UserProvider extends Model {
     allowNull: false,
   })
   profile: IUserProfile | object;
+
+  @BelongsTo(() => Provider)
+  provider: Provider;
 }

@@ -28,6 +28,12 @@
         "description": "Check API is alive"
       }
     },
+    "auth": {
+      "authenticate": {
+        "name": "Authenticate the user",
+        "description": "Check valid the user credentials to active provider of the customer"
+      }
+    },
     "user": {
       "getAll": {
         "name": "Get all users by customer",

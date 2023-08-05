@@ -9,7 +9,7 @@
   "CANNOT_RESOLVE_PROVIDER": "Cannot resolve user provider",
   "USER_HAS_UNSUPPORTED_PROVIDER": "The user uses an unsupported provider",
   "USER_HAS_NOT_PROVIDER": "The user has not a provider",
-  "USER_HAS_NOT_ACTIVE_PROVIDER": "The user has not a active provider",
+  "CUSTOMER_HAS_NOT_ACTIVE_PROVIDER": "The customer has not a active provider",
   "VALIDATION_ERROR": "Validation error",
   "CANNOT_DECRYPT_STRING": "Cannot decrypt string, probably this is not our encrypted string",
   "CANNOT_FIND_USER_FROM_CALLBACK_STATE": "Cannot find user from callback state",
@@ -20,5 +20,8 @@
   "CANNOT_FIND_CUSTOMER": "Cannot to find the customer",
   "PROVIDER_OWNER_IS_NOT_A_CUSTOMER": "The provider belongs to other customer",
   "HAS_NOT_ACCESS_TOKEN_IN_RESPONSE": "Has not access_token in response from the provider",
-  "CANNOT_CREATE_USER": "Cannot create a user"
+  "HAS_NOT_EMAIL_IN_RESPONSE": "Has not email in response from the provider",
+  "CANNOT_CREATE_USER": "Cannot create a user",
+  "GOT_ERROR_ON_GETTING_USER_PROFILE": "Got error when try to get the user profile from provider",
+  "GOT_ERROR_ON_REFRESH_USER_TOKEN": "Got error when try to refresh the user access token"
 }

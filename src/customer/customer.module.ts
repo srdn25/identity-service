@@ -1,14 +1,21 @@
-import { Logger, Module } from '@nestjs/common';
+import { forwardRef, Logger, Module } from '@nestjs/common';
 import { CustomerService } from './customer.service';
 import { SequelizeModule } from '@nestjs/sequelize';
 import { CustomerController } from './customer.controller';
 import { Customer } from './customer.entity';
-import { AuthService } from '../auth/auth.service';
 import { CustomerUser } from './customerUser.entity';
+import { AuthModule } from '../auth/auth.module';
+import { UserModule } from '../user/user.module';
+import { ProviderModule } from '../provider/provider.module';
 
 @Module({
-  imports: [SequelizeModule.forFeature([Customer, CustomerUser])],
-  providers: [Logger, CustomerService, AuthService],
+  imports: [
+    SequelizeModule.forFeature([Customer, CustomerUser]),
+    forwardRef(() => AuthModule),
+    UserModule,
+    forwardRef(() => ProviderModule),
+  ],
+  providers: [Logger, CustomerService],
   controllers: [CustomerController],
   exports: [CustomerService],
 })

@@ -1,4 +1,11 @@
-import { HttpException, HttpStatus, Injectable, Logger } from '@nestjs/common';
+import {
+  forwardRef,
+  HttpException,
+  HttpStatus,
+  Inject,
+  Injectable,
+  Logger,
+} from '@nestjs/common';
 import { messages } from '../consts';
 import { GoogleProvider } from './providers/google/google.provider';
 import { OAuth2 } from './providers/oauth.provider';
@@ -16,6 +23,7 @@ import * as dbHelper from '../tools/dbHelper.tool';
 import { UpdateProviderDto } from './dto/update.dto';
 import { BaseInterfaceProvider } from './providers/base.interface.provider';
 import { UserService } from '../user/user.service';
+import { AccessTokenResponseDto } from './dto/accessTokenResponse.dto';
 
 @Injectable()
 export class ProviderService {
@@ -25,6 +33,7 @@ export class ProviderService {
     private readonly logger: Logger,
     private readonly httpService: HttpService,
     @InjectModel(Provider) private providerRepository: typeof Provider,
+    @Inject(forwardRef(() => CustomerService))
     private readonly customerService: CustomerService,
     private readonly userService: UserService,
   ) {
@@ -34,7 +43,7 @@ export class ProviderService {
     };
   }
 
-  getProviderByName(providerName: string): BaseInterfaceProvider {
+  private getProviderByName(providerName: string): BaseInterfaceProvider {
     const Provider = this.providerList[providerName];
 
     if (!Provider) {
@@ -50,7 +59,7 @@ export class ProviderService {
     return new Provider(this.logger, this.httpService);
   }
 
-  async getUserProviderDataAndSave(encryptedState, authCode) {
+  async handleCallbackAndSaveData(encryptedState, authCode) {
     try {
       const rawState = OAuth2.decryptState(encryptedState);
 
@@ -100,7 +109,7 @@ export class ProviderService {
 
       return userProvider;
     } catch (error) {
-      this.logger.error(error, 'provider.service.getUserProviderDataAndSave');
+      this.logger.error(error, 'provider.service.handleCallbackAndSaveData');
 
       throw new HttpException(
         error.message,
@@ -147,7 +156,7 @@ export class ProviderService {
       throw new CustomError({
         status: HttpStatus.BAD_REQUEST,
         data: customer.providers,
-        reason: messages.USER_HAS_NOT_ACTIVE_PROVIDER,
+        reason: messages.CUSTOMER_HAS_NOT_ACTIVE_PROVIDER,
       });
     }
 
@@ -167,7 +176,7 @@ export class ProviderService {
     );
   }
 
-  async create(data: CreateProviderDto, customerId: number) {
+  async create(data: CreateProviderDto, customerId: number): Promise<Provider> {
     const customer = await this.customerService.findById(customerId);
 
     if (!customer) {
@@ -189,5 +198,58 @@ export class ProviderService {
 
   findById(id: number): Promise<Provider> {
     return dbHelper.find(this.providerRepository, { id: Number(id) });
+  }
+
+  findActiveCustomerProvider(customerId: number): Promise<Provider> {
+    return dbHelper.find(this.providerRepository, { customerId, active: true });
+  }
+
+  async getProfileFromProviderAndSave(
+    userId: number,
+    providerId: number,
+    providerType: string,
+    config: AccessTokenResponseDto,
+    providerConfig: object,
+    retry = false,
+  ) {
+    const provider = this.getProviderByName(providerType);
+
+    let userProfile;
+    let userConfig = config;
+    try {
+      userProfile = await provider.getUserProfile(config.access_token);
+    } catch (error) {
+      if (!retry && error instanceof CustomError && error.status === 401) {
+        // TODO: move to Google provider strategy. Each provider will have own strategy
+        userConfig = await provider.refreshAuthToken(
+          userConfig.refresh_token,
+          providerConfig,
+        );
+
+        // go to recursive only if retry = false
+        await this.getProfileFromProviderAndSave(
+          userId,
+          providerId,
+          providerType,
+          {
+            refresh_token: config.refresh_token,
+            ...userConfig,
+          },
+          providerConfig,
+          true,
+        );
+      } else {
+        throw error;
+      }
+    }
+
+    const userProvider = await this.userService.createOrUpdateUserProvider(
+      userId,
+      providerId,
+      userConfig,
+      userProfile,
+    );
+
+    return userProvider.profile;
   }
 }
