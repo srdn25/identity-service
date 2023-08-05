@@ -10,9 +10,10 @@ import {
 import { AuthService } from './auth.service';
 import { AuthStaticTokenGuard } from './authStaticToken.guard';
 import { IUserProfile } from '../provider/providers/google/userProfile.interface';
-import { ApiOperation, ApiResponse } from '@nestjs/swagger';
+import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { messages, swaggerMessages } from '../consts';
 
+@ApiTags(swaggerMessages.tags.auth.tag)
 @Controller('auth')
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
