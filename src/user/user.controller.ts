@@ -34,7 +34,7 @@ export class UserController {
   })
   @Get()
   async getAll(@Response() response, @Request() request): Promise<User[]> {
-    const result = await this.userService.findAll(request.customer?.customerId);
+    const result = await this.userService.findAll(request.customer.id);
     return response.status(HttpStatus.OK).json(result);
   }
 
@@ -70,10 +70,8 @@ export class UserController {
     }
 
     if (
-      request.customer?.customerId &&
-      !user.customers.some(
-        (customer) => customer.id === request.customer.customerId,
-      )
+      request.customer?.id &&
+      !user.customers.some((customer) => customer.id === request.customer.id)
     ) {
       throw new UnauthorizedException();
     }
@@ -108,10 +106,8 @@ export class UserController {
     const user = await this.userService.find(idOrEmail);
 
     if (
-      request.customer?.customerId &&
-      !user.customers.some(
-        (customer) => customer.id === request.customer.customerId,
-      )
+      request.customer?.id &&
+      !user.customers.some((customer) => customer.id === request.customer.id)
     ) {
       throw new UnauthorizedException();
     }

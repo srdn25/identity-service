@@ -4,9 +4,11 @@ import { JwtModule } from '@nestjs/jwt';
 import { AuthController } from './auth.controller';
 import { CustomerModule } from '../customer/customer.module';
 import { ProviderModule } from '../provider/provider.module';
+import { ConfigModule } from '../config/config.module';
 
 @Module({
   imports: [
+    ConfigModule,
     forwardRef(() => CustomerModule),
     JwtModule.register({
       global: true,

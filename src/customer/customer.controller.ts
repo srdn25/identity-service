@@ -81,7 +81,7 @@ export class CustomerController {
   ): Promise<User> {
     const result = await this.customerService.updateUser(
       body,
-      request.customer.customerId,
+      request.customer.id,
       id,
     );
 

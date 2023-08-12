@@ -13,7 +13,7 @@ import { UserModule } from '../user/user.module';
     SequelizeModule.forFeature([Provider, ProviderType]),
     HttpModule,
     forwardRef(() => CustomerModule),
-    UserModule,
+    forwardRef(() => UserModule),
   ],
   providers: [Logger, ProviderService],
   controllers: [ProviderController],

@@ -127,6 +127,10 @@ export class CustomerService {
     ]);
   }
 
+  async findByStaticToken(staticToken: string): Promise<Customer> {
+    return dbHelper.find(this.customerRepository, { staticToken });
+  }
+
   async signIn(
     login,
     password,

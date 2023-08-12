@@ -12,7 +12,7 @@ import { ProviderModule } from '../provider/provider.module';
   imports: [
     SequelizeModule.forFeature([Customer, CustomerUser]),
     forwardRef(() => AuthModule),
-    UserModule,
+    forwardRef(() => UserModule),
     forwardRef(() => ProviderModule),
   ],
   providers: [Logger, CustomerService],

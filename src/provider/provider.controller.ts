@@ -91,7 +91,7 @@ export class ProviderController {
     @Request() request,
   ): Promise<AuthLinkResponseDto> {
     const link = await this.providerService.prepareAuthorizationRequest(
-      request.customer?.customerId,
+      request.customer.id,
     );
 
     return response.status(HttpStatus.OK).json({ link });
@@ -113,7 +113,7 @@ export class ProviderController {
   ): Promise<Provider> {
     const provider = await this.providerService.create(
       body,
-      request.customer?.customerId,
+      request.customer.id,
     );
 
     return response.status(HttpStatus.OK).json(provider);
@@ -129,7 +129,7 @@ export class ProviderController {
   ): Promise<Provider> {
     const provider = await this.providerService.updateProviderConfig(
       id,
-      request.customer.customerId,
+      request.customer.id,
       body,
     );
 

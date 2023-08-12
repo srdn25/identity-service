@@ -43,7 +43,7 @@ export class AuthController {
     @Param('userId') userId: number,
   ): Promise<IUserProfile> {
     const result = await this.authService.authenticateUser(
-      request.customer?.customerId,
+      request.customer.id,
       userId,
     );
 
