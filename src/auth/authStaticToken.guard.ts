@@ -9,7 +9,7 @@ import {
   UnauthorizedException,
 } from '@nestjs/common';
 import { decrypt } from '../tools/crypto.tool';
-import { CustomerService } from '../customer/customer.service';
+import { CustomerService } from '../core/customer/customer.service';
 import { CustomError } from '../tools/errors/Custom.error';
 
 @Injectable()

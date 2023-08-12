@@ -9,7 +9,7 @@ import {
 } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { AuthStaticTokenGuard } from './authStaticToken.guard';
-import { IUserProfile } from '../provider/providers/google/userProfile.interface';
+import { IUserProfile } from '../core/provider/providers/google/userProfile.interface';
 import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { messages, swaggerMessages } from '../consts';
 

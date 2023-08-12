@@ -2,8 +2,8 @@ import { forwardRef, Logger, Module } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { JwtModule } from '@nestjs/jwt';
 import { AuthController } from './auth.controller';
-import { CustomerModule } from '../customer/customer.module';
-import { ProviderModule } from '../provider/provider.module';
+import { CustomerModule } from '../core/customer/customer.module';
+import { ProviderModule } from '../core/provider/provider.module';
 import { ConfigModule } from '../config/config.module';
 
 @Module({

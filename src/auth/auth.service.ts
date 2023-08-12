@@ -1,9 +1,9 @@
 import { forwardRef, Inject, Injectable } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { AuthPayloadDto } from './dto/authPayload.dto';
-import { CustomerService } from '../customer/customer.service';
-import { ProviderService } from '../provider/provider.service';
-import { UserProviderWithTypeDto } from '../user/dto/userProviderWithType.dto';
+import { CustomerService } from '../core/customer/customer.service';
+import { ProviderService } from '../core/provider/provider.service';
+import { UserProviderWithTypeDto } from '../core/user/dto/userProviderWithType.dto';
 
 @Injectable()
 export class AuthService {

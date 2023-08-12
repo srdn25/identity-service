@@ -1,12 +1,12 @@
 import { Module } from '@nestjs/common';
 import { SequelizeModule } from '@nestjs/sequelize';
-import { User } from '../user/user.entity';
+import { User } from '../core/user/user.entity';
 import { ConfigModule } from '../config/config.module';
-import { Provider } from '../provider/provider.entity';
-import { ProviderType } from '../provider/providerType.entity';
-import { Customer } from '../customer/customer.entity';
-import { CustomerUser } from '../customer/customerUser.entity';
-import { UserProvider } from '../user/userProvider.entity';
+import { Provider } from '../core/provider/provider.entity';
+import { ProviderType } from '../core/provider/providerType.entity';
+import { Customer } from '../core/customer/customer.entity';
+import { CustomerUser } from '../core/customer/customerUser.entity';
+import { UserProvider } from '../core/user/userProvider.entity';
 
 @Module({
   imports: [
