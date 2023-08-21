@@ -6,7 +6,6 @@ import { decrypt } from '../../../tools/crypto.tool';
 import { TokenStateDto } from '../dto/tokenState.dto';
 import { CustomError } from '../../../tools/errors/Custom.error';
 import { HttpStatus } from '@nestjs/common';
-import { getCallbackUrl } from '../../../tools/utils.tool';
 
 export class OAuth2 {
   constructor(private oAuthApi: string) {}
@@ -31,15 +30,19 @@ export class OAuth2 {
       access_type: 'offline',
       response_type: 'code',
       state: 'state_parameter_passthrough_value',
-      redirect_uri: getCallbackUrl(),
+      redirect_uri: 'http://localhost:3355/identity-provider/provider/callback',
       client_id: 'client_id',
     },
     description: swaggerMessages.methods.provider.requestToken.description,
   })
-  getAuthorizationUrl(params: PreparePayloadTokenDto): string {
+  getAuthorizationUrl(params: object): string {
     const queryParams = new URLSearchParams(classToPlain(params));
 
     return `${this.oAuthApi}?${queryParams}`;
+  }
+
+  getCallbackUrl(type: string): string {
+    return `http://${process.env.HOST}:${process.env.PORT}/${process.env.HOST_PREFIX}/provider/callback/${type}`;
   }
 
   static decryptState(state: string): TokenStateDto {

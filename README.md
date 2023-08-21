@@ -95,6 +95,9 @@ $ nest generate controller <controller name>
 
 # Generate new service
 $ nest generate service <service name>
+
+# Generate new migration in database
+$ npx sequelize-cli migration:generate --name <migration name>
 ```
 
 ## License

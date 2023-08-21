@@ -63,7 +63,7 @@ export class CustomerController {
     summary: swaggerMessages.requests.user.update.name,
     parameters: [
       {
-        name: 'idOrEmail',
+        name: 'id',
         in: 'path',
       },
     ],

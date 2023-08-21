@@ -3,7 +3,7 @@ import { UserService } from './user.service';
 import { User } from './user.entity';
 import { getModelToken } from '@nestjs/sequelize';
 import { HttpException, HttpStatus } from '@nestjs/common';
-import { messages } from '../consts';
+import { messages } from '../../consts';
 
 const userId = 1;
 const userId2 = 2;
@@ -15,7 +15,7 @@ const notExistingUserEmail = 'not@found.com';
 const usersArray = [
   {
     id: userId,
-    email: 'user1@email.com',
+    guid: 'user1@email.com',
     token: 'some-token-123',
     featureFlags: 'canCreatePost canEditPost canUpdatePost showNewFeature',
     createdAt: '2023-07-18 13:17:00',
@@ -23,7 +23,7 @@ const usersArray = [
   },
   {
     id: userId2,
-    email: 'user2@email.com',
+    guid: 'user2@email.com',
     token: null,
     featureFlags: null,
     createdAt: '2023-07-18 13:17:00',
@@ -31,7 +31,7 @@ const usersArray = [
   },
   {
     id: userId3,
-    email: 'user3@email.com',
+    guid: 'user3@email.com',
     token: 'some-token-111',
     featureFlags: null,
     createdAt: '2023-07-18 13:17:00',
@@ -48,8 +48,8 @@ describe('UserService', () => {
         return usersArray.find((el) => target.where.id === el.id);
       }
 
-      if (target.where?.email) {
-        return usersArray.find((el) => target.where.email === el.email);
+      if (target.where?.guid) {
+        return usersArray.find((el) => target.where.email === el.guid);
       }
 
       return null;
@@ -81,13 +81,13 @@ describe('UserService', () => {
   });
 
   it('should be able find all users', async () => {
-    const result = await service.findAll();
+    const result = await service.findAll(1);
     expect(mockRepository.findAll).toHaveBeenCalledTimes(1);
     expect(result).toEqual(usersArray);
   });
 
   it('should be able find user by id', async () => {
-    const result = await service.find(usersArray[0].id);
+    const result = await service.findById(usersArray[0].id);
     expect(result).toEqual(usersArray[0]);
     expect(mockRepository.findOne).toHaveBeenCalledTimes(1);
     expect(mockRepository.findOne).toHaveBeenCalledWith({
@@ -95,18 +95,18 @@ describe('UserService', () => {
     });
   });
 
-  it('should be able find user by email', async () => {
-    const result = await service.find(usersArray[1].email);
+  it('should be able find user by guid', async () => {
+    const result = await service.findByGuid(usersArray[1].guid);
     expect(result).toEqual(usersArray[1]);
     expect(mockRepository.findOne).toHaveBeenCalledTimes(1);
     expect(mockRepository.findOne).toHaveBeenCalledWith({
-      where: { email: usersArray[1].email },
+      where: { guid: usersArray[1].guid },
     });
   });
 
   it('should throw 404 error if not found by id', async () => {
     try {
-      await service.find(notExistingUserId);
+      await service.findById(notExistingUserId);
     } catch (error) {
       expect(error instanceof HttpException).toBe(true);
       expect(mockRepository.findOne).toHaveBeenCalledTimes(1);
@@ -118,64 +118,17 @@ describe('UserService', () => {
     }
   });
 
-  it('should throw 404 error if not found by email', async () => {
+  it('should throw 404 error if not found by guid', async () => {
     try {
-      await service.find(notExistingUserEmail);
+      await service.findByGuid(notExistingUserEmail);
     } catch (error) {
       expect(error instanceof HttpException).toBe(true);
       expect(mockRepository.findOne).toHaveBeenCalledTimes(1);
       expect(mockRepository.findOne).toHaveBeenCalledWith({
-        where: { email: notExistingUserEmail },
+        where: { guid: notExistingUserEmail },
       });
       expect(error.message).toEqual(messages.USER_NOT_FOUND);
       expect(error.status).toEqual(HttpStatus.NOT_FOUND);
-    }
-  });
-
-  it('should update user', async () => {
-    const payload = {
-      featureFlags: 'one second read delete',
-      token: 'toke-updated-user',
-    };
-    const updatedCount = 1;
-
-    mockRepository.update.mockImplementation(() => [updatedCount]);
-
-    const result = await service.update(payload, userId);
-
-    expect(result).toEqual(usersArray[0]);
-    expect(mockRepository.update).toHaveBeenCalledTimes(1);
-    expect(mockRepository.update).toHaveBeenCalledWith(payload, {
-      where: {
-        id: userId,
-      },
-    });
-    expect(mockRepository.findOne).toHaveBeenCalledTimes(1);
-    expect(mockRepository.findOne).toHaveBeenCalledWith({
-      where: {
-        id: userId,
-      },
-    });
-  });
-
-  it('should throw error if updated user not found', async () => {
-    mockRepository.update.mockImplementation(() => [0]);
-
-    try {
-      await service.update({}, userId);
-    } catch (error) {
-      expect(error instanceof HttpException).toBe(true);
-      expect(error.message).toEqual(messages.USER_NOT_FOUND);
-      expect(error.status).toEqual(HttpStatus.NOT_FOUND);
-      expect(mockRepository.update).toHaveBeenCalledTimes(1);
-      expect(mockRepository.update).toHaveBeenCalledWith(
-        {},
-        {
-          where: {
-            id: userId,
-          },
-        },
-      );
     }
   });
 
@@ -183,7 +136,7 @@ describe('UserService', () => {
     const email = 'user@identity.ca';
     const deletedCount = 1;
     mockRepository.destroy.mockImplementation(() => deletedCount);
-    const result = await service.delete(email);
+    const result = await service.deleteByGuid(email);
 
     expect(result).toEqual(deletedCount);
     expect(mockRepository.destroy).toHaveBeenCalledTimes(1);
@@ -197,7 +150,7 @@ describe('UserService', () => {
   it('should delete user by id', async () => {
     const deletedCount = 1;
     mockRepository.destroy.mockImplementation(() => deletedCount);
-    const result = await service.delete(userId);
+    const result = await service.deleteById(userId);
 
     expect(result).toEqual(deletedCount);
     expect(mockRepository.destroy).toHaveBeenCalledTimes(1);
@@ -211,7 +164,7 @@ describe('UserService', () => {
   it('should throw error if user for delete not found', async () => {
     mockRepository.destroy.mockImplementation(() => 0);
     try {
-      await service.delete(userId);
+      await service.deleteById(userId);
     } catch (error) {
       expect(error instanceof HttpException).toBe(true);
       expect(mockRepository.destroy).toHaveBeenCalledTimes(1);

@@ -8,11 +8,7 @@ import {
 } from '@nestjs/common';
 import { messages } from '../../consts';
 import { GoogleProvider } from './providers/google/google.provider';
-import { OAuth2 } from './providers/oauth.provider';
-import {
-  StateValidation,
-  validateProviderState,
-} from './providers/google/state.validation';
+import { StateValidation } from './providers/google/state.validation';
 import { HttpService } from '@nestjs/axios';
 import { InjectModel } from '@nestjs/sequelize';
 import { Provider } from './provider.entity';
@@ -24,10 +20,17 @@ import { UpdateProviderDto } from './dto/update.dto';
 import { BaseInterfaceProvider } from './providers/base.interface.provider';
 import { UserService } from '../user/user.service';
 import { AccessTokenResponseDto } from './dto/accessTokenResponse.dto';
+import { TelegramProvider } from './providers/telegram/telegram.provider';
+import providerStrategies from './providers/strategies/index.strategy';
+import { IProviderType } from './common.interface';
 
 @Injectable()
 export class ProviderService {
   private readonly providerList;
+  private readonly providerStrategies: {
+    Google: typeof providerStrategies.Google;
+    Telegram: typeof providerStrategies.Telegram;
+  };
 
   constructor(
     private readonly logger: Logger,
@@ -40,7 +43,10 @@ export class ProviderService {
     // should be like in provider_type table
     this.providerList = {
       Google: GoogleProvider,
+      Telegram: TelegramProvider,
     };
+
+    this.providerStrategies = providerStrategies;
   }
 
   private getProviderByName(providerName: string): BaseInterfaceProvider {
@@ -59,51 +65,60 @@ export class ProviderService {
     return new Provider(this.logger, this.httpService);
   }
 
-  async handleCallbackAndSaveData(encryptedState, authCode) {
+  // TODO: add JWT token for telegram check auth (for 15 min). Because TG hasn't API for get data by token
+  async handleCallbackAndSaveData(
+    providerType: IProviderType,
+    providerResponseData: string,
+    customerId: number,
+    authCode?: string,
+  ) {
     try {
-      const rawState = OAuth2.decryptState(encryptedState);
+      const strategy = this.providerStrategies[providerType];
+      let userProfile, accessConfig;
 
-      const state = validateProviderState(rawState);
+      const provider = this.getProviderByName(providerType);
 
-      const customer = await this.customerService.findById(state.customerId);
+      // get customer config for active provider
+      const customer = await this.customerService.findById(customerId);
 
-      const provider = this.getProviderByName(customer.providers[0]?.type.name);
+      switch (String(providerType)) {
+        case IProviderType.google:
+          [userProfile, accessConfig] = await strategy(
+            providerResponseData,
+            provider,
+            customer.providers[0].config,
+            authCode,
+          );
+        case IProviderType.telegram:
+          [userProfile, accessConfig] = strategy(
+            providerResponseData,
+            provider,
+            customer.providers[0].config,
+          );
+      }
 
-      let tokenResponse;
-      try {
-        tokenResponse = await provider.getAuthToken(
-          customer.providers[0].config,
-          authCode,
-        );
-      } catch (error) {
+      if (!userProfile) {
         throw new CustomError({
-          status:
-            error.status ||
-            error.response.status ||
-            HttpStatus.INTERNAL_SERVER_ERROR,
-          message: error.message || messages.FAIL_ON_REQUEST_AUTH_TOKEN,
+          message: messages.CANNOT_GET_PROVIDER_USER_DATA,
+          status: HttpStatus.INTERNAL_SERVER_ERROR,
           data: {
-            message: error.message,
-            state,
-            error: error.data,
+            customerId,
+            providerType,
+            providerResponseData,
           },
         });
       }
 
-      const userProfile = await provider.getUserProfile(
-        tokenResponse.access_token,
-      );
-
-      let user = await this.userService.find(userProfile.email);
+      let user = await this.userService.findByGuid(userProfile.guid);
 
       if (!user) {
-        user = await this.userService.create(userProfile.email, customer);
+        user = await this.userService.create(userProfile.guid, customer);
       }
 
       const userProvider = await this.userService.createOrUpdateUserProvider(
         user.id,
         customer.providers[0].id,
-        tokenResponse,
+        accessConfig,
         userProfile,
       );
 

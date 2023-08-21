@@ -5,7 +5,6 @@ import { encrypt } from '../../../../tools/crypto.tool';
 import { ConfigValidation } from './googleConfig.validation';
 import { TokenStateDto } from '../../dto/tokenState.dto';
 import { HttpService } from '@nestjs/axios';
-import { getCallbackUrl } from '../../../../tools/utils.tool';
 import { BaseInterfaceProvider } from '../base.interface.provider';
 import { CustomError } from '../../../../tools/errors/Custom.error';
 import { messages } from '../../../../consts';
@@ -31,12 +30,12 @@ export class GoogleProvider extends OAuth2 implements BaseInterfaceProvider {
    * After the web server receives the authorization code, it can exchange the authorization code for an access token.
    * Auth code can be use only one time!
    */
-  async getAuthToken(config: ConfigValidation, code) {
+  async handleCallback(config: ConfigValidation, code) {
     const payload = {
       ...config,
       code,
       grant_type: 'authorization_code',
-      redirect_uri: getCallbackUrl(),
+      redirect_uri: this.getCallbackUrl(this.providerName.toLowerCase()),
     };
 
     const authTokens = await this.httpService.axiosRef.post(
@@ -78,12 +77,12 @@ export class GoogleProvider extends OAuth2 implements BaseInterfaceProvider {
    * &prompt=consent
    */
   prepareAuthorizationUrl(config, state): string {
-    const payload = this.prepareTokenParams(config, state);
+    const payload = this.prepareAuthParams(config, state);
 
     return this.getAuthorizationUrl(payload);
   }
 
-  prepareTokenParams(
+  prepareAuthParams(
     config: ConfigValidation,
     state: TokenStateDto,
   ): PreparePayloadTokenDto {
@@ -91,7 +90,7 @@ export class GoogleProvider extends OAuth2 implements BaseInterfaceProvider {
       scope: 'openid profile email',
       access_type: 'offline',
       response_type: 'code',
-      redirect_uri: `http://${process.env.HOST}:${process.env.PORT}/${process.env.HOST_PREFIX}/provider/callback`,
+      redirect_uri: this.getCallbackUrl(this.providerName.toLowerCase()),
       state: encrypt(state),
       client_id: config.client_id,
       prompt: 'consent',

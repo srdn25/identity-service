@@ -23,5 +23,7 @@
   "HAS_NOT_EMAIL_IN_RESPONSE": "Has not email in response from the provider",
   "CANNOT_CREATE_USER": "Cannot create a user",
   "GOT_ERROR_ON_GETTING_USER_PROFILE": "Got error when try to get the user profile from provider",
-  "GOT_ERROR_ON_REFRESH_USER_TOKEN": "Got error when try to refresh the user access token"
+  "GOT_ERROR_ON_REFRESH_USER_TOKEN": "Got error when try to refresh the user access token",
+  "UNSUPPORTED_PROVIDER": "Not support the provider type",
+  "CANNOT_GET_PROVIDER_USER_DATA": "Cannot get the user data from provider"
 }

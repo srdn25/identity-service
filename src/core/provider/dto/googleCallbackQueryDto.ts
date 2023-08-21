@@ -2,7 +2,7 @@ import { ApiProperty } from '@nestjs/swagger';
 import { messages, swaggerMessages } from '../../../consts';
 import { IsString } from 'class-validator';
 
-export class CallbackRequestQueryDto {
+export class GoogleCallbackQueryDto {
   @ApiProperty({
     example: '4/0AZEOvhX4NdJhZefezMPCPsr8tCWq_xsrrv',
     description: swaggerMessages.types.callbackReqQuery.code,

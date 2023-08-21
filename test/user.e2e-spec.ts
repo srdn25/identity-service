@@ -1,11 +1,11 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { HttpStatus, INestApplication } from '@nestjs/common';
 import * as request from 'supertest';
-import { User } from '../src/user/user.entity';
+import { User } from '../src/core/user/user.entity';
 import { userStub } from './stubs/user.stub';
 import { ConfigModule } from '@nestjs/config';
 import { DatabaseModule } from '../src/database/database.module';
-import { UserModule } from '../src/user/user.module';
+import { UserModule } from '../src/core/user/user.module';
 
 describe('AppController (e2e)', () => {
   let app: INestApplication;
@@ -55,11 +55,11 @@ describe('AppController (e2e)', () => {
     ]);
   });
 
-  it('/users/:idOrEmail by email (GET)', async () => {
+  it('/users/:guid by email (GET)', async () => {
     await User.bulkCreate(userStub);
 
     const { body } = await request(app.getHttpServer())
-      .get(`/users/${userStub[0].email}`)
+      .get(`/users/${userStub[0].guid}`)
       .expect(HttpStatus.OK);
 
     expect(!!body).toBeTruthy();
@@ -71,7 +71,7 @@ describe('AppController (e2e)', () => {
     });
   });
 
-  it('/users/:idOrEmail by id (GET)', async () => {
+  it('/users/:guid by id (GET)', async () => {
     await User.bulkCreate([userStub[0]]);
 
     const { body } = await request(app.getHttpServer())
@@ -87,39 +87,20 @@ describe('AppController (e2e)', () => {
     });
   });
 
-  it('/users/:idOrEmail (DELETE) by id', async () => {
+  it('/users/:guid (DELETE) by guid', async () => {
     await User.bulkCreate(userStub);
     const existingUser = await User.findOne({
-      where: { email: userStub[0].email },
+      where: { guid: userStub[0].guid },
     });
 
     const { body } = await request(app.getHttpServer())
-      .delete(`/users/${existingUser.id}`)
+      .delete(`/users/${existingUser.guid}`)
       .expect(HttpStatus.OK);
 
     expect(body).toEqual(1);
 
     const deletedUser = await User.findOne({
-      where: { email: userStub[0].email },
-    });
-
-    expect(!!deletedUser).toBeFalsy();
-  });
-
-  it('/users/:idOrEmail (DELETE) by email', async () => {
-    await User.bulkCreate(userStub);
-    const existingUser = await User.findOne({
-      where: { email: userStub[0].email },
-    });
-
-    const { body } = await request(app.getHttpServer())
-      .delete(`/users/${existingUser.email}`)
-      .expect(HttpStatus.OK);
-
-    expect(body).toEqual(1);
-
-    const deletedUser = await User.findOne({
-      where: { email: userStub[0].email },
+      where: { guid: userStub[0].guid },
     });
 
     expect(!!deletedUser).toBeFalsy();

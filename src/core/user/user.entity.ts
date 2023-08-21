@@ -28,14 +28,14 @@ export class User extends Model {
 
   @ApiProperty({
     example: 'user@mail.com',
-    description: swaggerMessages.entities.user.email.description,
+    description: swaggerMessages.entities.user.guid.description,
   })
   @Column({
     type: DataType.STRING,
     unique: true,
     allowNull: false,
   })
-  email: string;
+  guid: string;
 
   @BelongsToMany(() => Customer, () => CustomerUser)
   customers: Customer[];

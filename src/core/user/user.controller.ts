@@ -43,7 +43,7 @@ export class UserController {
     summary: swaggerMessages.requests.user.get.name,
     parameters: [
       {
-        name: 'idOrEmail',
+        name: 'guid',
         in: 'path',
       },
     ],
@@ -57,13 +57,13 @@ export class UserController {
     status: HttpStatus.NOT_FOUND,
     description: messages.USER_NOT_FOUND,
   })
-  @Get('/:idOrEmail')
+  @Get('/:guid')
   async getUser(
     @Request() request,
     @Response() response,
-    @Param('idOrEmail') idOrEmail: number | string,
+    @Param('guid') guid: string,
   ) {
-    const user = await this.userService.find(idOrEmail);
+    const user = await this.userService.findByGuid(guid);
 
     if (!user) {
       throw new HttpException(messages.USER_NOT_FOUND, HttpStatus.NOT_FOUND);
@@ -84,7 +84,7 @@ export class UserController {
     summary: swaggerMessages.requests.user.delete.name,
     parameters: [
       {
-        name: 'idOrEmail',
+        name: 'guid',
         in: 'path',
       },
     ],
@@ -97,13 +97,13 @@ export class UserController {
     status: HttpStatus.NOT_FOUND,
     description: messages.USER_NOT_FOUND,
   })
-  @Delete('/:idOrEmail')
+  @Delete('/:guid')
   async deleteUser(
     @Request() request,
     @Response() response,
-    @Param('idOrEmail') idOrEmail: number | string,
+    @Param('guid') guid: string,
   ) {
-    const user = await this.userService.find(idOrEmail);
+    const user = await this.userService.findByGuid(guid);
 
     if (
       request.customer?.id &&
@@ -112,7 +112,7 @@ export class UserController {
       throw new UnauthorizedException();
     }
 
-    const result = await this.userService.delete(idOrEmail);
+    const result = await this.userService.deleteByGuid(guid);
 
     return response.status(HttpStatus.OK).json(result);
   }

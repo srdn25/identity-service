@@ -1,26 +1,28 @@
 import {
+  Body,
   Controller,
   Get,
   HttpStatus,
   Logger,
-  Response,
-  Request,
-  Query,
-  UseGuards,
-  Body,
+  Param,
   Post,
   Put,
-  Param,
+  Query,
+  Request,
+  Response,
+  UseGuards,
 } from '@nestjs/common';
 import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
-import { swaggerMessages } from '../../consts';
+import { messages, swaggerMessages } from '../../consts';
 import { ProviderService } from './provider.service';
 import { AuthLinkResponseDto } from './dto/authLinkResponse.dto';
-import { CallbackRequestQueryDto } from './dto/callbackRequestQuery.dto';
+import { GoogleCallbackQueryDto } from './dto/googleCallbackQueryDto';
 import { AuthStaticTokenGuard } from '../../auth/authStaticToken.guard';
 import { Provider } from './provider.entity';
 import { CreateProviderDto } from './dto/create.dto';
 import { UpdateProviderDto } from './dto/update.dto';
+import { TelegramCallbackQueryDto } from './dto/telegramCallbackQueryDto';
+import { IProviderType } from './common.interface';
 
 @ApiTags(swaggerMessages.tags.provider.tag)
 @Controller('provider')
@@ -33,13 +35,6 @@ export class ProviderController {
   @ApiOperation({
     summary: swaggerMessages.requests.provider.callback.name,
     parameters: [
-      {
-        name: 'provider',
-        in: 'path',
-        required: true,
-        description: swaggerMessages.requests.provider.callback.params.provider,
-        example: 'google',
-      },
       {
         name: 'code',
         in: 'query',
@@ -59,19 +54,57 @@ export class ProviderController {
     ],
   })
   @ApiResponse({
-    status: HttpStatus.OK,
+    status: HttpStatus.NO_CONTENT,
     description: swaggerMessages.requests.provider.callback.description,
   })
-  @Get('/callback')
-  async callback(
+  @ApiResponse({
+    status: HttpStatus.BAD_REQUEST,
+    description: messages.UNSUPPORTED_PROVIDER,
+  })
+  @Get('/callback/google/:customerId')
+  async callbackGoogle(
     @Response() response,
-    @Query() query: CallbackRequestQueryDto,
+    @Query() query: GoogleCallbackQueryDto,
+    @Param('customerId') customerId: number,
   ) {
     const preparedCode = decodeURIComponent(query.code);
-
     await this.providerService.handleCallbackAndSaveData(
+      IProviderType.google,
       query.state,
+      customerId,
       preparedCode,
+    );
+
+    return response.status(HttpStatus.NO_CONTENT);
+  }
+
+  @ApiOperation({
+    summary: swaggerMessages.requests.provider.callback.name,
+    parameters: [
+      {
+        name: 'tgAuthResult',
+        in: 'query',
+      },
+    ],
+  })
+  @ApiResponse({
+    status: HttpStatus.NO_CONTENT,
+    description: swaggerMessages.requests.provider.callback.description,
+  })
+  @ApiResponse({
+    status: HttpStatus.BAD_REQUEST,
+    description: messages.UNSUPPORTED_PROVIDER,
+  })
+  @Get('/callback/telegram/:customerId')
+  async callbackTelegram(
+    @Response() response,
+    @Query() query: TelegramCallbackQueryDto,
+    @Param('customerId') customerId: number,
+  ) {
+    await this.providerService.handleCallbackAndSaveData(
+      IProviderType.telegram,
+      query.tgAuthResult,
+      customerId,
     );
 
     return response.status(HttpStatus.NO_CONTENT);

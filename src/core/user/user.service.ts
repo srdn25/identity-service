@@ -19,13 +19,6 @@ export class UserService {
     private userProviderRepository: typeof UserProvider,
   ) {}
 
-  private whereForIdOrEmail(idOrEmail) {
-    return {
-      ...(/^\d+$/.test(idOrEmail)
-        ? { id: Number(idOrEmail) }
-        : { email: idOrEmail }),
-    };
-  }
   async findAll(customerId: number): Promise<User[]> {
     return this.userRepository.findAll({
       order: [['id', 'ASC']],
@@ -53,17 +46,19 @@ export class UserService {
     });
   }
 
-  find(idOrEmail: number | string): Promise<User> {
-    return this.userRepository.findOne({
-      where: this.whereForIdOrEmail(idOrEmail),
-    });
+  findById(id: number): Promise<User> {
+    return dbHelper.find(this.userRepository, { id });
   }
 
-  async create(email: string, customer: Customer): Promise<User> {
+  findByGuid(guid: string): Promise<User> {
+    return dbHelper.find(this.userRepository, { guid });
+  }
+
+  async create(guid: string, customer: Customer): Promise<User> {
     let user;
 
     try {
-      user = await this.userRepository.create({ email });
+      user = await this.userRepository.create({ guid });
       await user.$set('customers', [customer.id]);
       user.customers = [customer];
     } catch (error) {
@@ -71,7 +66,7 @@ export class UserService {
         ...error,
         reason: messages.CANNOT_CREATE_USER,
         data: {
-          email,
+          guid,
         },
       });
     }
@@ -79,9 +74,21 @@ export class UserService {
     return user;
   }
 
-  async delete(idOrEmail: number | string) {
+  async deleteByGuid(guid: number | string) {
     const deleted = await this.userRepository.destroy({
-      where: this.whereForIdOrEmail(idOrEmail),
+      where: { guid },
+    });
+
+    if (deleted > 0) {
+      return deleted;
+    }
+
+    throw new HttpException(messages.USER_NOT_FOUND, HttpStatus.NOT_FOUND);
+  }
+
+  async deleteById(id: number) {
+    const deleted = await this.userRepository.destroy({
+      where: { id },
     });
 
     if (deleted > 0) {
