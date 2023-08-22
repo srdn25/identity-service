@@ -2,7 +2,11 @@
 
 - [Architecture](documentation/Architecture.md)
 - [Authorization flow](documentation/Authorization_flow.md)
-
+---
+Providers configuration guide
+- [Telegram](documentation/providers/telegram/telegram.md)
+- [Google](documentation/providers/google/google.md)
+---
 ## Description
 
 ![Workflow](documentation/workflow.svg)
