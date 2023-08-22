@@ -1,3 +1,5 @@
+[Return to main page](../../../README.md)
+
 ## Setup Google provider
 
 Origin article from Google https://developers.google.com/identity/protocols/oauth2/web-server

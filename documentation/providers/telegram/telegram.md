@@ -1,3 +1,5 @@
+[Return to main page](../../../README.md)
+
 ## Setup Telegram provider
 
 Origin article from Telegram https://core.telegram.org/widgets/login
