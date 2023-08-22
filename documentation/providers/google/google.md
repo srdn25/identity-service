@@ -11,6 +11,7 @@ At the first you need to create new oAuth client
 ![credentials page](./credentials_page.jpg)
 
 - Click to "Create Credentials", on the top navigation
+![create oauth credentials](./credentials_create_page.jpg)
 - In the opened window, choose "Application type" as the Web application
 - Name of your oAuth client - as you wish
 - Authorized redirect URIs - add URL to the Identity Service callback for Google provider
