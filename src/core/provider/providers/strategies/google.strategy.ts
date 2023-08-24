@@ -3,24 +3,32 @@ import { validateProviderState } from '../google/state.validation';
 import { CustomError } from '../../../../tools/errors/Custom.error';
 import { HttpStatus } from '@nestjs/common';
 import { messages } from '../../../../consts';
-import { GoogleProvider } from '../google/google.provider';
 import { IUserProfile } from '../google/userProfile.interface';
-import { ConfigValidation } from '../google/googleConfig.validation';
+import { BaseInterfaceProvider } from '../base.interface.provider';
+import { GoogleProvider } from '../google/google.provider';
 
 export default async function GoogleStrategy(
   providerResponseData: string,
-  provider: GoogleProvider,
-  config: ConfigValidation,
+  provider: BaseInterfaceProvider | GoogleProvider,
+  config,
   authCode: string,
-): Promise<[IUserProfile, object]> {
+): Promise<[IUserProfile | null, object]> {
+  let tokenResponse;
+
+  if (!authCode) {
+    return [null, tokenResponse];
+  }
+
   const rawState = OAuth2.decryptState(providerResponseData);
 
   const state = validateProviderState(rawState);
 
-  let tokenResponse;
-
   try {
-    tokenResponse = await provider.handleCallback(config, authCode);
+    tokenResponse = await provider.handleCallback(
+      config,
+      authCode,
+      state.customerId,
+    );
   } catch (error) {
     throw new CustomError({
       status:

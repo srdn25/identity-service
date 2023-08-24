@@ -15,7 +15,7 @@ At the first you need to create new oAuth client
 - In the opened window, choose "Application type" as the Web application
 - Name of your oAuth client - as you wish
 - Authorized redirect URIs - add URL to the Identity Service callback for Google provider
-`https://<host>/identity-provider/provider/callback/google`
+`https://<host>/identity-provider/provider/callback/google/<your customer id>`
 
 #### Create a provider in the Identity Service
 When you created an oAuth client from the step "Create oAuth client", you will see the credentials

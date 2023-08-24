@@ -134,7 +134,7 @@ export class CustomerService {
   async signIn(
     login,
     password,
-  ): Promise<{ customer: Customer; authToken: string }> {
+  ): Promise<{ customer: ReturnCustomerDataDto; authToken: string }> {
     const customer = await this.findByLogin(login, true);
 
     if (!customer) {
@@ -157,7 +157,7 @@ export class CustomerService {
     });
 
     return {
-      customer,
+      customer: customer.serialize(),
       authToken,
     };
   }

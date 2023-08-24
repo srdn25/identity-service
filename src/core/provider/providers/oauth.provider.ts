@@ -1,11 +1,11 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { messages, swaggerMessages } from '../../../consts';
-import { PreparePayloadTokenDto } from '../dto/requestToken.dto';
 import { classToPlain } from 'class-transformer';
 import { decrypt } from '../../../tools/crypto.tool';
 import { TokenStateDto } from '../dto/tokenState.dto';
 import { CustomError } from '../../../tools/errors/Custom.error';
 import { HttpStatus } from '@nestjs/common';
+import { IProviderType } from '../common.interface';
 
 export class OAuth2 {
   constructor(private oAuthApi: string) {}
@@ -41,8 +41,8 @@ export class OAuth2 {
     return `${this.oAuthApi}?${queryParams}`;
   }
 
-  getCallbackUrl(type: string): string {
-    return `http://${process.env.HOST}:${process.env.PORT}/${process.env.HOST_PREFIX}/provider/callback/${type}`;
+  getCallbackUrl(type: IProviderType, customerId: number): string {
+    return `http://${process.env.HOST}:${process.env.PORT}/${process.env.HOST_PREFIX}/provider/callback/${type}/${customerId}`;
   }
 
   static decryptState(state: string): TokenStateDto {

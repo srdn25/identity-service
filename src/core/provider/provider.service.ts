@@ -23,27 +23,34 @@ import { AccessTokenResponseDto } from './dto/accessTokenResponse.dto';
 import { TelegramProvider } from './providers/telegram/telegram.provider';
 import providerStrategies from './providers/strategies/index.strategy';
 import { IProviderType } from './common.interface';
+import { ProviderType } from './providerType.entity';
+import { Sequelize } from 'sequelize-typescript';
+import sequelize from 'sequelize';
+import { SequelizeError } from '../../tools/errors/SequelizeError.error';
 
 @Injectable()
 export class ProviderService {
   private readonly providerList;
   private readonly providerStrategies: {
-    Google: typeof providerStrategies.Google;
-    Telegram: typeof providerStrategies.Telegram;
+    [IProviderType.google]: (typeof providerStrategies)[IProviderType.google];
+    [IProviderType.telegram]: (typeof providerStrategies)[IProviderType.telegram];
   };
 
   constructor(
     private readonly logger: Logger,
     private readonly httpService: HttpService,
     @InjectModel(Provider) private providerRepository: typeof Provider,
+    @InjectModel(ProviderType)
+    private providerTypeRepository: typeof ProviderType,
     @Inject(forwardRef(() => CustomerService))
     private readonly customerService: CustomerService,
     private readonly userService: UserService,
+    private readonly sequelize: Sequelize,
   ) {
     // should be like in provider_type table
     this.providerList = {
-      Google: GoogleProvider,
-      Telegram: TelegramProvider,
+      [IProviderType.google]: GoogleProvider,
+      [IProviderType.telegram]: TelegramProvider,
     };
 
     this.providerStrategies = providerStrategies;
@@ -89,13 +96,18 @@ export class ProviderService {
             customer.providers[0].config,
             authCode,
           );
+          break;
         case IProviderType.telegram:
-          [userProfile, accessConfig] = strategy(
+          [userProfile] = await strategy(
             providerResponseData,
             provider,
             customer.providers[0].config,
+            null,
           );
+          break;
       }
+
+      // const userProvider = await this.userService.findUserProvider()
 
       if (!userProfile) {
         throw new CustomError({
@@ -109,10 +121,10 @@ export class ProviderService {
         });
       }
 
-      let user = await this.userService.findByGuid(userProfile.guid);
+      let user = await this.userService.findByGuid(userProfile.id);
 
       if (!user) {
-        user = await this.userService.create(userProfile.guid, customer);
+        user = await this.userService.create(userProfile.id, customer);
       }
 
       const userProvider = await this.userService.createOrUpdateUserProvider(
@@ -164,7 +176,7 @@ export class ProviderService {
     return provider;
   }
 
-  async prepareAuthorizationRequest(customerId): Promise<string> {
+  async prepareAuthorizationRequest(customerId: number): Promise<string> {
     const customer = await this.customerService.findById(customerId);
 
     if (!customer.providers[0]?.config) {
@@ -204,6 +216,7 @@ export class ProviderService {
       });
     }
 
+    // if customer already has provider - create provider with active is false
     return this.providerRepository.create({
       ...data,
       customerId,
@@ -219,6 +232,45 @@ export class ProviderService {
     return dbHelper.find(this.providerRepository, { customerId, active: true });
   }
 
+  async setActiveProvider(
+    customerId: number,
+    providerId: number,
+  ): Promise<boolean> {
+    const transaction = await this.sequelize.transaction();
+
+    try {
+      await Promise.all([
+        this.providerRepository.update(
+          { active: false },
+          {
+            where: { customerId, id: { [sequelize.Op.not]: providerId } },
+            transaction,
+          },
+        ),
+        this.providerRepository.update(
+          { active: true },
+          {
+            where: { customerId, id: providerId },
+            transaction,
+          },
+        ),
+      ]);
+
+      await transaction.commit();
+    } catch (error) {
+      throw new SequelizeError(error);
+    }
+
+    return true;
+  }
+
+  /**
+   * Currently this method use only Google.
+   * Here we can get the user data from identity provider by access token.
+   *
+   * Some providers do not provide API with access token. Like Telegram - we can
+   * just get once the user data (when authorize)
+   */
   async getProfileFromProviderAndSave(
     userId: number,
     providerId: number,
@@ -266,5 +318,9 @@ export class ProviderService {
     );
 
     return userProvider.profile;
+  }
+
+  getSupportedProviders() {
+    return dbHelper.findAll(this.providerTypeRepository, {});
   }
 }

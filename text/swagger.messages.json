@@ -65,6 +65,10 @@
         "name": "Send request to authorization",
         "description": "Return link for open provider auth page, than wait response on callback endpoint"
       },
+      "getAvailable": {
+        "name": "Get available providers",
+        "description": "Return all supported providers"
+      },
       "createProvider": {
         "name": "Create new a provider",
         "description": "Create new provider for the customer"

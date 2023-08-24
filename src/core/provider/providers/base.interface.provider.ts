@@ -26,7 +26,7 @@ export interface BaseInterfaceProvider {
    * Handle callback, get data after authorization.
    * Provider will send data to us, on our callback webhook
    */
-  handleCallback: (config: object, code: string) => any;
+  handleCallback: (config: object, code: string, customerId?: number) => any;
 
   /**
    * Update authorization token, when it expired. Use for that refresh token -

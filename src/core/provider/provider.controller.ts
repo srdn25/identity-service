@@ -5,6 +5,7 @@ import {
   HttpStatus,
   Logger,
   Param,
+  ParseIntPipe,
   Post,
   Put,
   Query,
@@ -75,7 +76,7 @@ export class ProviderController {
       preparedCode,
     );
 
-    return response.status(HttpStatus.NO_CONTENT);
+    return response.status(HttpStatus.OK).send('ok');
   }
 
   @ApiOperation({
@@ -107,7 +108,7 @@ export class ProviderController {
       customerId,
     );
 
-    return response.status(HttpStatus.NO_CONTENT);
+    return response.status(HttpStatus.OK).send('ok');
   }
 
   @UseGuards(AuthStaticTokenGuard)
@@ -167,5 +168,40 @@ export class ProviderController {
     );
 
     return response.status(HttpStatus.OK).json(provider);
+  }
+
+  @ApiOperation({
+    summary: swaggerMessages.requests.provider.getAvailable.name,
+  })
+  @ApiResponse({
+    status: HttpStatus.OK,
+    description: swaggerMessages.requests.provider.getAvailable.description,
+  })
+  @Get('/')
+  async getAvailableProviders(
+    @Response() response,
+  ): Promise<AuthLinkResponseDto> {
+    const providers = await this.providerService.getSupportedProviders();
+
+    return response.status(HttpStatus.OK).json({ providers });
+  }
+
+  @UseGuards(AuthStaticTokenGuard)
+  @ApiOperation({
+    summary: swaggerMessages.requests.provider.getAvailable.name,
+  })
+  @ApiResponse({
+    status: HttpStatus.OK,
+    description: swaggerMessages.requests.provider.getAvailable.description,
+  })
+  @Put('/set-active/:id')
+  async setActiveProvider(
+    @Response() response,
+    @Request() request,
+    @Param('id', ParseIntPipe) id: number,
+  ): Promise<AuthLinkResponseDto> {
+    await this.providerService.setActiveProvider(request.customer.id, id);
+
+    return response.status(HttpStatus.OK).send('updated');
   }
 }

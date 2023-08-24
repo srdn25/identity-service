@@ -9,20 +9,21 @@ import { BaseInterfaceProvider } from '../base.interface.provider';
 import { CustomError } from '../../../../tools/errors/Custom.error';
 import { messages } from '../../../../consts';
 import { IUserProfile } from './userProfile.interface';
+import { IProviderType } from '../../common.interface';
 
 /**
  * Client should configure project in Google API console
  * In redirect URIs Project in the API Console Credentials page should be listed our redirect URI
  */
 export class GoogleProvider extends OAuth2 implements BaseInterfaceProvider {
-  private readonly providerName: string;
+  private readonly providerName: IProviderType.google;
   constructor(
     logger: Logger,
     private httpService: HttpService,
     oAuthApi = 'https://accounts.google.com/o/oauth2/v2/auth',
   ) {
     super(oAuthApi);
-    this.providerName = 'Google';
+    this.providerName = IProviderType.google;
   }
 
   /**
@@ -30,12 +31,16 @@ export class GoogleProvider extends OAuth2 implements BaseInterfaceProvider {
    * After the web server receives the authorization code, it can exchange the authorization code for an access token.
    * Auth code can be use only one time!
    */
-  async handleCallback(config: ConfigValidation, code) {
+  async handleCallback(
+    config: ConfigValidation,
+    code: string,
+    customerId: number,
+  ) {
     const payload = {
       ...config,
       code,
       grant_type: 'authorization_code',
-      redirect_uri: this.getCallbackUrl(this.providerName.toLowerCase()),
+      redirect_uri: this.getCallbackUrl(this.providerName, customerId),
     };
 
     const authTokens = await this.httpService.axiosRef.post(
@@ -90,7 +95,7 @@ export class GoogleProvider extends OAuth2 implements BaseInterfaceProvider {
       scope: 'openid profile email',
       access_type: 'offline',
       response_type: 'code',
-      redirect_uri: this.getCallbackUrl(this.providerName.toLowerCase()),
+      redirect_uri: this.getCallbackUrl(this.providerName, state.customerId),
       state: encrypt(state),
       client_id: config.client_id,
       prompt: 'consent',
