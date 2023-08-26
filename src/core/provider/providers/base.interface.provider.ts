@@ -1,6 +1,7 @@
-import { ConfigValidation } from './google/googleConfig.validation';
 import { TokenStateDto } from '../dto/tokenState.dto';
 import { PreparePayloadTokenDto } from '../dto/requestToken.dto';
+import { TelegramCallbackQueryDto } from '../dto/telegramCallbackQueryDto';
+import { ITelegramConfig } from './telegram/common.interface';
 
 export interface BaseInterfaceProvider {
   /**
@@ -11,10 +12,7 @@ export interface BaseInterfaceProvider {
   /**
    * Prepare params for authorization link. Use in prepareAuthorizationUrl
    */
-  prepareAuthParams?: (
-    config: ConfigValidation,
-    state: TokenStateDto,
-  ) => PreparePayloadTokenDto;
+  prepareAuthParams?: (config, state) => PreparePayloadTokenDto | object;
 
   /**
    * Prepare authorization link for the user. Need redirect the user by this link
@@ -26,7 +24,11 @@ export interface BaseInterfaceProvider {
    * Handle callback, get data after authorization.
    * Provider will send data to us, on our callback webhook
    */
-  handleCallback: (config: object, code: string, customerId?: number) => any;
+  handleCallback: (
+    config: object | ITelegramConfig,
+    code: string | TelegramCallbackQueryDto,
+    customerId?: number,
+  ) => any;
 
   /**
    * Update authorization token, when it expired. Use for that refresh token -

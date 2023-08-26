@@ -57,7 +57,7 @@ export class ProviderService {
   }
 
   private getProviderByName(providerName: string): BaseInterfaceProvider {
-    const Provider = this.providerList[providerName];
+    const Provider = this.providerList[providerName.toLowerCase()];
 
     if (!Provider) {
       throw new CustomError({
@@ -75,7 +75,7 @@ export class ProviderService {
   // TODO: add JWT token for telegram check auth (for 15 min). Because TG hasn't API for get data by token
   async handleCallbackAndSaveData(
     providerType: IProviderType,
-    providerResponseData: string,
+    providerResponseData,
     customerId: number,
     authCode?: string,
   ) {
@@ -107,8 +107,6 @@ export class ProviderService {
           break;
       }
 
-      // const userProvider = await this.userService.findUserProvider()
-
       if (!userProfile) {
         throw new CustomError({
           message: messages.CANNOT_GET_PROVIDER_USER_DATA,
@@ -121,10 +119,13 @@ export class ProviderService {
         });
       }
 
-      let user = await this.userService.findByGuid(userProfile.id);
+      // prefer email as guid
+      const guid = userProfile.email || userProfile.id;
+
+      let user = await this.userService.findByGuid(guid);
 
       if (!user) {
-        user = await this.userService.create(userProfile.id, customer);
+        user = await this.userService.create(guid, customer);
       }
 
       const userProvider = await this.userService.createOrUpdateUserProvider(

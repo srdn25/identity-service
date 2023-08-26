@@ -24,6 +24,7 @@ import { CreateProviderDto } from './dto/create.dto';
 import { UpdateProviderDto } from './dto/update.dto';
 import { TelegramCallbackQueryDto } from './dto/telegramCallbackQueryDto';
 import { IProviderType } from './common.interface';
+import { validateData } from '../../tools/validateData.validation';
 
 @ApiTags(swaggerMessages.tags.provider.tag)
 @Controller('provider')
@@ -99,12 +100,33 @@ export class ProviderController {
   @Get('/callback/telegram/:customerId')
   async callbackTelegram(
     @Response() response,
-    @Query() query: TelegramCallbackQueryDto,
+    @Query() query,
     @Param('customerId') customerId: number,
   ) {
+    // telegram will redirect to /identity-provider/provider/callback/telegram/1#tgAuthResult=eyJpZCI6Mjk1MzY4Mzg2LCJmaX
+    // # tag can handle only on client side
+    let validData;
+    try {
+      validData = validateData(query, TelegramCallbackQueryDto);
+    } catch (err) {
+      if (Object.keys(query).length) {
+        this.logger.debug(
+          'Telegram callback query is not valid',
+          err.serialize(),
+        );
+      }
+    }
+
+    if (!validData) {
+      /**
+       * Get window.location.hash and send data to backend (this endpoint)
+       */
+      return response.status(HttpStatus.OK).render('telegram-oauth.hbs');
+    }
+
     await this.providerService.handleCallbackAndSaveData(
       IProviderType.telegram,
-      query.tgAuthResult,
+      validData,
       customerId,
     );
 

@@ -13,6 +13,4 @@
   If the user has auth data - you will see the data in response. If the user is not authorized - "Identity service"
   will send 401 status
 
-You can authorize the user when a token will expire
-
-
+![Database schema](./database.png)

@@ -1,0 +1,46 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Telegram oAuth</title>
+</head>
+
+<body>
+<div>
+  <h1>Telegram oAuth</h1>
+</div>
+
+<script>
+  const data = haveTgAuthResult();
+  if (data) {
+    const href = window.location.href.split('#')[0];
+    const query = new URLSearchParams(data);
+
+    fetch(`${href}?${query}`).catch(err => console.log(err));
+  }
+
+  // The function from official telegram widget
+  function haveTgAuthResult() {
+    let locationHash = '', re = /[#\?\&]tgAuthResult=([A-Za-z0-9\-_=]*)$/, match;
+    try {
+      locationHash = location.hash.toString();
+      if (match = locationHash.match(re)) {
+        location.hash = locationHash.replace(re, '');
+        let data = match[1] || '';
+        data = data.replace(/-/g, '+').replace(/_/g, '/');
+        const pad = data.length % 4;
+        if (pad > 1) {
+          data += new Array(5 - pad).join('=');
+        }
+        return JSON.parse(window.atob(data));
+      }
+    } catch (err) {
+      console.log(err);
+    }
+    return false;
+  }
+</script>
+</body>
+</html>

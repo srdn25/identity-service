@@ -26,7 +26,7 @@ export class UserProvider extends Model {
 
   @Column({
     type: DataType.JSONB,
-    allowNull: false,
+    allowNull: true,
   })
   config: object;
 

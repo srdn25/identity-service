@@ -1,25 +1,23 @@
 import { createHash, createHmac } from 'node:crypto';
 import { OAuth2 } from '../oauth.provider';
 import { BaseInterfaceProvider } from '../base.interface.provider';
-import {
-  IAuthUrlConfig,
-  IDataInCallback,
-  IDataInCallbackHash,
-  ITelegramConfig,
-} from './common.interface';
+import { IDataInCallback, ITelegramConfig } from './common.interface';
 import { CustomError } from '../../../../tools/errors/Custom.error';
 import { HttpStatus, Logger } from '@nestjs/common';
 import { HttpService } from '@nestjs/axios';
+import { TokenStateDto } from '../../dto/tokenState.dto';
+import { IProviderType } from '../../common.interface';
+import { TelegramCallbackQueryDto } from '../../dto/telegramCallbackQueryDto';
 
 export class TelegramProvider extends OAuth2 implements BaseInterfaceProvider {
-  private readonly providerName: string;
+  private readonly providerName: IProviderType.telegram;
   constructor(
     logger: Logger,
     private httpService: HttpService,
     oAuthApi = 'https://oauth.telegram.org/auth',
   ) {
     super(oAuthApi);
-    this.providerName = 'Telegram';
+    this.providerName = IProviderType.telegram;
   }
 
   /**
@@ -49,27 +47,18 @@ export class TelegramProvider extends OAuth2 implements BaseInterfaceProvider {
    *     return false;
    *   }
    */
-  handleCallback(config: ITelegramConfig, hash: string): IDataInCallback {
-    const encodedCallbackHash: string = new Buffer(hash, 'base64').toString();
-    const data: IDataInCallbackHash = JSON.parse(encodedCallbackHash);
+  handleCallback(
+    config: ITelegramConfig,
+    data: TelegramCallbackQueryDto,
+  ): IDataInCallback {
+    const result: any = Object.assign({}, data);
+    delete result.hash;
 
-    const result = {
-      id: data.id,
-      first_name: data.first_name,
-      last_name: data.last_name,
-      username: data.username,
-      photo_url: data.photo_url,
-      auth_date: data.auth_date,
-    };
+    const isAuth = this.checkAuthHash(result, data.hash, config);
 
-    const secretKey = createHash('sha256').update(config.botToken).digest();
-    const checkHash = createHmac('sha256', secretKey)
-      .update(JSON.stringify(result))
-      .digest('hex');
-
-    if (data.hash !== checkHash) {
+    if (!isAuth) {
       throw new CustomError({
-        message: 'Invalid hash',
+        message: 'Invalid telegram hash',
         status: HttpStatus.BAD_REQUEST,
         data: {
           data,
@@ -77,6 +66,7 @@ export class TelegramProvider extends OAuth2 implements BaseInterfaceProvider {
       });
     }
 
+    result.auth_date = result.auth_date * 1000;
     return result;
   }
 
@@ -84,17 +74,53 @@ export class TelegramProvider extends OAuth2 implements BaseInterfaceProvider {
    * Data for required parameters got
    * from https://telegram.org/js/telegram-widget.js - popup_url variable
    */
-  prepareAuthorizationUrl(config: IAuthUrlConfig): string {
-    const payload = {
-      bot_id: config.botId,
+  prepareAuthorizationUrl(
+    config: ITelegramConfig,
+    state: TokenStateDto,
+  ): string {
+    const payload = this.prepareAuthParams(config, state);
+
+    return this.getAuthorizationUrl(payload);
+  }
+
+  prepareAuthParams(config: ITelegramConfig, state: TokenStateDto) {
+    return {
+      bot_id: config.bot_id,
       request_access: 'write',
-      // return_to: this.getCallbackUrl(this.providerName.toLowerCase()),
-      return_to:
-        'https://e6b4-207-161-55-187.ngrok.io/identity-provider/provider/callback/telegram',
+      // return_to: this.getCallbackUrl(this.providerName, state.customerId),
+      return_to: `https://e6b4-207-161-55-187.ngrok.io/identity-provider/provider/callback/telegram/${state.customerId}`,
       origin: 'https://e6b4-207-161-55-187.ngrok.io',
       // origin: `http://${process.env.HOST}:${process.env.PORT}`,
     };
+  }
 
-    return this.getAuthorizationUrl(payload);
+  /**
+   * Checking authorization
+   * You can verify the authentication and the integrity of the data received
+   * by comparing the received hash parameter with the hexadecimal representation
+   * of the HMAC-SHA-256 signature of the data-check-string with the SHA256
+   * hash of the bot's token used as a secret key.
+   *
+   * Data-check-string is a concatenation of all received fields, sorted in alphabetical order,
+   * in the format key=<value> with a line feed character ('\n', 0x0A) used as
+   * separator – e.g., 'auth_date=<auth_date>\nfirst_name=<first_name>\nid=<id>\nusername=<username>'.
+   *
+   * @return boolean - True - is valid. False - not valid
+   */
+  checkAuthHash(data: IDataInCallback, hash: string, config: ITelegramConfig) {
+    const hashPayload = Object.entries(data)
+      .sort((a, b) => (a[0] > b[0] ? 1 : -1))
+      .map(([key, value]) => `${key}=${value}`)
+      .join('\n');
+    const secretKey = createHash('sha256').update(config.bot_id).digest();
+    const checkHash = createHmac('sha256', secretKey)
+      .update(hashPayload)
+      .digest('hex');
+
+    if (hash !== checkHash) {
+      return false;
+    }
+
+    return true;
   }
 }

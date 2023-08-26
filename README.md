@@ -107,3 +107,18 @@ $ npx sequelize-cli migration:generate --name <migration name>
 ## License
 
 [GNU licensed](LICENSE).
+
+## TODO
+- The user.guid can be not uniq
+
+Example:
+User A - has Google, Telegram
+Google will provide data with user.email = a@gmail.com
+Telegram will provide data with user.id = 12345
+
+User B - has Okta
+Okta will provide data with user.id = 12345
+
+In the identity-provider database it's looks like the same user. But it's not true
+Maybe better delete User.guid, or move UserProvider fields to User, or think about unique reference id,
+pointed to UserProvider

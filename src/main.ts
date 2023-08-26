@@ -1,3 +1,4 @@
+import { join } from 'node:path';
 import { HttpAdapterHost, NestFactory } from '@nestjs/core';
 import * as winston from 'winston';
 import {
@@ -12,6 +13,7 @@ import { swaggerMessages } from './consts';
 import { GlobalHandleErrors } from './globalHandleErrors.filter';
 import { Logger } from '@nestjs/common';
 import { ValidationPipe } from './pipes/Validation.pipe';
+import { NestExpressApplication } from '@nestjs/platform-express';
 
 async function bootstrap() {
   const PORT = process.env.PORT || 3000;
@@ -56,7 +58,7 @@ async function bootstrap() {
     )
     .build();
 
-  const app = await NestFactory.create(AppModule, {
+  const app = await NestFactory.create<NestExpressApplication>(AppModule, {
     logger: WinstonModule.createLogger({
       instance: logger,
     }),
@@ -67,6 +69,8 @@ async function bootstrap() {
   app.setGlobalPrefix(process.env.HOST_PREFIX);
   app.useGlobalFilters(new GlobalHandleErrors(httpAdapterHost, appLogger));
   app.useGlobalPipes(new ValidationPipe());
+  app.setBaseViewsDir(join(__dirname, '..', '..', 'public'));
+  app.setViewEngine('hbs');
 
   const swaggerDocument = SwaggerModule.createDocument(app, swaggerConfig);
   SwaggerModule.setup(`/${process.env.HOST_PREFIX}/doc`, app, swaggerDocument);
